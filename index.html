@@ -61,8 +61,35 @@
         #quiz-status { font-size: 1.2em; margin-bottom: 20px; color: #cccccc; }
         #question-box { min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; margin-bottom: 30px; background-color: #383838; border-radius: 10px; }
         #question-text { font-size: 1.4em; font-weight: bold; margin-bottom: 20px; line-height: 1.5; text-align: left; width: 100%; }
+        /* 단일 입력 필드 */
         #answer-input { width: 80%; padding: 12px; font-size: 1.1em; border: 2px solid #555; border-radius: 8px; background-color: #444; color: #e0e0e0; text-align: center; outline: none; transition: border-color 0.3s; }
         #answer-input:focus { border-color: #8ab4f8; }
+
+        /* 다중 입력 필드 컨테이너 및 내부 스타일 */
+        #multi-answer-input-container {
+            width: 80%; 
+            margin: 0 auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px;
+            align-items: center;
+        }
+        .multi-answer-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background-color: #444;
+            color: #e0e0e0;
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .multi-answer-input:focus { border-color: #8ab4f8; }
+
+        /* 서술형 입력 필드 */
         .essay-input-container { width: 90%; margin: 10px auto; }
         .essay-input-container textarea { width: 100%; height: 100px; padding: 10px; font-size: 1em; border: 2px solid #555; border-radius: 8px; background-color: #444; color: #e0e0e0; resize: vertical; outline: none; box-sizing: border-box; }
         #essay-answer-box { background-color: #444; border: 1px solid #666; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; display: none; }
@@ -99,7 +126,17 @@
         <div id="quiz-area">
             <div id="question-box">
                 <div id="question-text"></div>
+                
                 <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="display: none;"/>
+                
+                <div id="multi-answer-input-container" style="display: none;">
+                    <p id="multi-answer-guide" style="font-size: 0.9em; margin-bottom: 15px; color: #ff8a80;"></p>
+                    <input type="text" class="multi-answer-input" placeholder="답변 1" />
+                    <input type="text" class="multi-answer-input" placeholder="답변 2" />
+                    <input type="text" class="multi-answer-input" placeholder="답변 3" />
+                    <input type="text" class="multi-answer-input" placeholder="답변 4" />
+                </div>
+
                 <div class="essay-input-container" id="essay-input-area" style="display: none;">
                     <textarea id="essay-user-answer" placeholder="답안을 서술하세요."></textarea>
                     <div id="essay-answer-box">
@@ -133,7 +170,7 @@
 <script>
     // --- 원본 퀴즈 데이터 정의 (모든 팩트를 담은 소스) ---
     const sourceQuizData = [
-        // --- 기존 단답형 문제 (26개) ---
+        // --- 기존 단답형 문제 (단일 정답, 26개) ---
         { type: "short", q: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은 무엇인가요?", a: "스마트그리드", id: "s-1" },
         { type: "short", q: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능한 기술은 무엇인가요?", a: "정보통신기술", id: "s-2" },
         { type: "short", q: "태양/풍력/수력 발전, 탄소 배출 감소, 에너지 저장 기술 등을 통해 지속 가능한 발전과 지구 환경 문제 해결에 도움을 주는 기술은 무엇인가요?", a: "신재생에너지기술", id: "s-3" },
@@ -161,7 +198,7 @@
         { type: "short", q: "기후 변화, 미세 먼지, 생물종 감소 등과 관련된 과학 윤리의 구분 분야는?", a: "환경,생태계", id: "s-25" },
         { type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는?", a: "기술공학", id: "s-26" },
         
-        // --- ★ 신규 추가된 단답형 문제 (과학 윤리 분야별 사례) ---
+        // --- 추가된 단답형 문제 (단일 정답, 과학 윤리 분야 맞추기) ---
         { type: "short", q: "안락사, 동물 실험, 배아 연구, 맞춤 아기, 인공 수정, 냉동 인간 등과 관련된 과학 윤리의 구분 분야는?", a: "생명윤리", id: "s-27" },
         { type: "short", q: "유전자 재조합, 줄기세포 연구, 유전자 변형 생물, 인간 복제 등과 관련된 과학 윤리의 구분 분야는?", a: "유전공학", id: "s-28" },
         { type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 우주 탐사선의 핵연료, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는?", a: "기술공학", id: "s-29" },
@@ -170,6 +207,17 @@
         { type: "short", q: "현대 의약품 개발, 성장 호르몬, 비만과 다이어트, 항생재 남용 등과 관련된 과학 윤리의 구분 분야는?", a: "의료,질병", id: "s-32" },
         { type: "short", q: "표절, 정신이상의 처벌, 과속과 교통사고 등과 관련된 과학 윤리의 구분 분야는?", a: "법,도덕", id: "s-33" },
         { type: "short", q: "지구촌 혐오, 환경 호르몬, 가상현실, 급발진 사고, 전자파 피해 등과 관련된 과학 윤리의 구분 분야는?", a: "기타", id: "s-34" },
+
+        // --- ★ 신규 추가된 단답형 문제 (다중 정답, 과학 윤리 사례 나열) ---
+        // type: short 이지만 a는 Array 이며, num_req: 필요한 최소 정답 개수를 표시.
+        { type: "short", q: "생명윤리의 중요성이 요구되는 사례 3가지를 순서 상관없이 서술하시오.", a: ["안락사", "동물실험", "배아연구", "맞춤아기", "인공수정", "냉동인간"], num_req: 3, id: "s-case-1" },
+        { type: "short", q: "유전공학의 중요성이 요구되는 사례 3가지를 순서 상관없이 서술하시오.", a: ["유전자재조합", "줄기세포연구", "유전자변형생물", "인간복제"], num_req: 3, id: "s-case-2" },
+        { type: "short", q: "기술공학의 중요성이 요구되는 사례 3가지를 순서 상관없이 서술하시오.", a: ["나노기술", "로봇", "식량자원", "우주항해", "우주탐사선의핵연료", "드론사용범위"], num_req: 3, id: "s-case-3" },
+        { type: "short", q: "환경, 생태계 분야에서 과학 윤리의 중요성이 요구되는 사례 3가지를 순서 상관없이 서술하시오.", a: ["기후변화", "지구온난화", "탄소배출권", "자원개발", "댐건설", "미세먼지", "생물종감소", "광공해", "독성화학물질의농축", "수돗물의불소화"], num_req: 3, id: "s-case-4" },
+        { type: "short", q: "에너지 분야에서 과학 윤리의 중요성이 요구되는 사례 2가지를 순서 상관없이 서술하시오.", a: ["핵발전", "핵발전사고", "방사성폐기물", "해양자원의이용"], num_req: 2, id: "s-case-5" },
+        { type: "short", q: "의료, 질병 분야에서 과학 윤리의 중요성이 요구되는 사례 2가지를 순서 상관없이 서술하시오.", a: ["현대의약품개발", "성장호르몬", "비만과다이어트", "항생제남용"], num_req: 2, id: "s-case-6" },
+        { type: "short", q: "법, 도덕 분야에서 과학 윤리의 중요성이 요구되는 사례 2가지를 순서 상관없이 서술하시오.", a: ["표절", "정신이상의처벌", "과속과교통사고"], num_req: 2, id: "s-case-7" },
+        { type: "short", q: "기타 분야에서 과학 윤리의 중요성이 요구되는 사례 2가지를 순서 상관없이 서술하시오.", a: ["지구촌혐오", "환경호르몬", "가상현실", "급발진사고", "전자파피해"], num_req: 2, id: "s-case-8" },
         
         // --- 기존 서술형 문제 (11개) ---
         { type: "essay", q: "인공지능 로봇의 활용 예시 중, 공장에서의 활용과 그 효과를 서술하시오.", a: "공장에서 반복적이고 위험한 작업을 수행합니다. 이를 통해 생산 효율성이 향상되고, 위험한 일에 실시간으로 적절하게 대처할 수 있습니다.", id: "e-1" },
@@ -183,16 +231,6 @@
         { type: "essay", q: "동물 실험에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 의약품, 화장품 등을 생산할 때 인간이 직접 실험 대상이 될 수 없으므로 동물 실험은 반드시 필요하다.\n반대: 안정성을 충분히 확보해 불필요한 동물 실험을 줄여야 한다.", id: "e-9" },
         { type: "essay", q: "과학 관련 사회적 쟁점에 대한 '합리적 의사 결정'을 위해 필요한 과정을 서술하시오.", a: "다양한 관점과 복잡한 상황을 과학적으로 이해하고, 충분한 토론을 거쳐 합리적으로 의사 결정을 내릴 수 있어야 한다.", id: "e-10" },
         { type: "essay", q: "과학기술이 바람직하게 발전하기 위해 과학 윤리를 지켜야 하는 이유를 서술하시오.", a: "과학 기술의 발전이 가져올 과학 관련 사회적 쟁점을 예측하기 어렵기 때문에, 윤리적 태도를 갖추어 과학 기술이 긍정적으로 발전할 수 있도록 노력해야 한다.", id: "e-11" },
-        
-        // --- ★ 신규 추가된 서술형 문제 (과학 윤리 분야별 사례) ---
-        { type: "essay", q: "생명윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "안락사, 동물 실험, 배아 연구, 맞춤 아기, 인공 수정, 냉동 인간 등", id: "e-12" },
-        { type: "essay", q: "유전공학의 중요성이 요구되는 사례를 모두 서술하시오.", a: "유전자 재조합, 줄기세포 연구, 유전자 변형 생물, 인간 복제 등", id: "e-13" },
-        { type: "essay", q: "기술공학의 중요성이 요구되는 사례를 모두 서술하시오.", a: "나노 기술, 로봇, 식량 자원, 우주 항해, 우주 탐사선의 핵연료, 드론 사용 범위 등", id: "e-14" },
-        { type: "essay", q: "환경, 생태계 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "기후 변화, 지구 온난화, 탄소 배출권, 자원 개발, 댐 건설, 미세 먼지, 생물종 감소, 광공해, 독성 화학 물질의 농축, 수돗물의 불소화 등", id: "e-15" },
-        { type: "essay", q: "에너지 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "핵발전, 핵발전 사고, 방사성 폐기물, 해양 자원의 이용 등", id: "e-16" },
-        { type: "essay", q: "의료, 질병 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "현대 의약품 개발, 성장 호르몬, 비만과 다이어트, 항생재 남용 등", id: "e-17" },
-        { type: "essay", q: "법, 도덕 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "표절, 정신이상의 처벌, 과속과 교통사고 등", id: "e-18" },
-        { type: "essay", q: "기타 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "지구촌 혐오, 환경 호르몬, 가상현실, 급발진 사고, 전자파 피해 등", id: "e-19" },
     ];
 
     let shortQuizData = [];
@@ -220,7 +258,7 @@
         essayQuizData = sourceQuizData.filter(q => q.type === 'essay');
 
         // 단답형 문제를 역산하여 서술형 문제로 변환 및 ID 부여 
-        sourceQuizData.filter(q => q.type === 'short').forEach(q => {
+        sourceQuizData.filter(q => q.type === 'short' && !q.num_req).forEach(q => { // 단일 답만 역산 문제로 생성
             const reversedQ = `다음 과학기술/개념에 대해 서술하시오. (${q.a})`;
             const reversedA = q.q; 
             // 단답형이었던 문제는 다시 서술형으로 만들어서 essayQuizData에 추가
@@ -300,6 +338,7 @@
             document.getElementById('quiz-status').textContent = '오답 노트가 비어있어! 메인 퀴즈에서 틀린 문제를 먼저 만들어 봐.';
             document.getElementById('question-text').textContent = '문제가 없어!';
             document.getElementById('answer-input').style.display = 'none';
+            document.getElementById('multi-answer-input-container').style.display = 'none'; // 추가
             document.getElementById('essay-input-area').style.display = 'none';
             document.getElementById('check-button').style.display = 'none';
             document.getElementById('next-button').style.display = 'none';
@@ -348,8 +387,9 @@
         }
         
         // 문제 내용 업데이트
+        const qType = currentQuestion.type === 'short' ? '단답형' : '서술형';
         document.getElementById('question-text').textContent = 
-            `[${currentQuestion.type === 'short' ? '단답형' : '서술형'}] ${currentQuestion.q}`;
+            `[${qType}] ${currentQuestion.q}`;
         
         // 입력/결과 초기화
         document.getElementById('result-text').textContent = '';
@@ -358,10 +398,33 @@
         document.getElementById('essay-user-answer').value = '';
         document.getElementById('essay-answer-box').style.display = 'none';
 
-        // 유형에 따라 입력 필드 토글 (현재 문제의 유형을 따름)
+        // 다중 입력 필드 초기화
+        const multiInputs = document.querySelectorAll('.multi-answer-input');
+        multiInputs.forEach(input => {
+            input.value = '';
+            input.style.display = 'block'; // 기본적으로 4개 모두 보이도록
+            input.disabled = false;
+        });
+
+        // 유형에 따라 입력 필드 토글 
         const isShortQuestion = currentQuestion.type === 'short';
-        document.getElementById('answer-input').style.display = isShortQuestion ? 'block' : 'none';
+        const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req; // 다중 답 단답형인지 확인
+
         document.getElementById('essay-input-area').style.display = isShortQuestion ? 'none' : 'block';
+
+        if (isMultiAnswerShort) {
+            document.getElementById('answer-input').style.display = 'none';
+            document.getElementById('multi-answer-input-container').style.display = 'flex';
+            document.getElementById('multi-answer-guide').textContent = `요구 개수: 최소 ${currentQuestion.num_req}개 이상 (순서 무관)`;
+            
+            // num_req에 따라 필드 개수 조절 (선택 사항이지만 깔끔하게)
+            // 예를 들어 num_req가 2개이면 4개 중 2개만 활성화/보이게 할 수 있지만, 여기서는 모두 보이게 유지하고 가이드만 명확히 함.
+
+        } else if (isShortQuestion) {
+            document.getElementById('answer-input').style.display = 'block';
+            document.getElementById('multi-answer-input-container').style.display = 'none';
+        }
+
 
         // 버튼 및 상태 초기화
         document.getElementById('check-button').style.display = 'inline-block';
@@ -377,21 +440,25 @@
         // 핵심 수정 사항: 다음 문제 로드 시 입력 필드에 바로 포커스
         // **********************************************
         setTimeout(() => {
-            const inputField = isShortQuestion 
-                ? document.getElementById('answer-input') 
-                : document.getElementById('essay-user-answer');
+            let inputField;
+            if (isMultiAnswerShort) {
+                 inputField = document.querySelector('.multi-answer-input:not([disabled])');
+            } else if (isShortQuestion) {
+                 inputField = document.getElementById('answer-input');
+            } else { // essay
+                 inputField = document.getElementById('essay-user-answer');
+            }
             
             // 기존에 포커스된 요소(특히 '다음 문제' 버튼)가 있다면 해제하고 포커스 이동
             if (document.activeElement) {
                 document.activeElement.blur();
             }
             
-            // 입력 필드가 실제로 화면에 보일 때 포커스를 줘야 함
+            // 입력 필드 포커스
             if (inputField && inputField.style.display !== 'none') {
                  inputField.focus();
             }
-        }, 0); // 0ms delay로 DOM 업데이트 후 즉시 실행 보장
-        // **********************************************
+        }, 0); 
     }
 
     // --- 정답 확인 핸들러 ---
@@ -410,21 +477,76 @@
         }
     }
 
-    // 단답형 자동 채점
+    // 단답형 자동 채점 (단일 정답 및 다중 정답 모두 처리)
     function checkShortAnswer(currentQuestion) {
         const state = quizState[currentMode];
-        const userAnswer = document.getElementById('answer-input').value.replace(/\s/g, '').toLowerCase();
-        const correctAnswer = currentQuestion.a.replace(/\s/g, '').toLowerCase();
         const resultText = document.getElementById('result-text');
         
-        let isCorrect = (userAnswer === correctAnswer);
+        const isMultiAnswer = currentQuestion.num_req;
+
+        let isCorrect = false;
+        let feedbackMessage = '';
+        let allCorrectAnswers;
+
+        if (isMultiAnswer) {
+            // --- 다중 정답 처리 로직 ---
+            const multiInputs = document.querySelectorAll('.multi-answer-input');
+            const userAnswers = [];
+            const requiredCount = currentQuestion.num_req;
+
+            multiInputs.forEach(input => {
+                const normalized = input.value.replace(/\s/g, '').toLowerCase();
+                if (normalized) {
+                    userAnswers.push(normalized);
+                }
+                input.disabled = true; // 입력 필드 비활성화
+            });
+
+            // 정답 리스트 (공백 제거 및 소문자화)
+            allCorrectAnswers = currentQuestion.a.map(a => a.replace(/\s/g, '').toLowerCase());
+
+            // 순서 무관 정답 개수 계산
+            let correctCount = 0;
+            const matchedInputs = [];
+            
+            userAnswers.forEach(userA => {
+                if (allCorrectAnswers.includes(userA) && !matchedInputs.includes(userA)) {
+                    correctCount++;
+                    matchedInputs.push(userA); // 중복 답안 방지
+                }
+            });
+
+            // 요구 개수 충족 여부로 최종 정답 판별
+            isCorrect = (correctCount >= requiredCount);
+            
+            // 피드백 메시지 생성
+            const correctText = currentQuestion.a.join(', ');
+            feedbackMessage = `${requiredCount}개 중 <strong>${correctCount}개</strong> 정답입니다.`;
+            if (!isCorrect) {
+                feedbackMessage += `<br/>**정답 리스트**: ${correctText}`;
+            }
+
+        } else {
+            // --- 단일 정답 처리 로직 (기존 로직 유지) ---
+            const userAnswer = document.getElementById('answer-input').value.replace(/\s/g, '').toLowerCase();
+            const correctAnswer = currentQuestion.a.replace(/\s/g, '').toLowerCase();
+            allCorrectAnswers = currentQuestion.a; // 단일 정답
+            
+            isCorrect = (userAnswer === correctAnswer);
+            
+            if (!isCorrect) {
+                feedbackMessage = `오답입니다! 정답: ${currentQuestion.a}`;
+            }
+            document.getElementById('answer-input').disabled = true;
+        }
+
 
         if (isCorrect) {
-            resultText.textContent = '정답입니다!';
+            resultText.innerHTML = isMultiAnswer ? `**완벽 정답!** <br/> ${feedbackMessage}` : '정답입니다!';
             resultText.classList.add('correct');
             if (currentMode !== 'review') state.score++;
         } else {
-            resultText.textContent = `오답입니다! 정답: ${currentQuestion.a}`;
+            resultText.innerHTML = isMultiAnswer ? `**오답/불완전 정답!** <br/> ${feedbackMessage}` : feedbackMessage;
             resultText.classList.add('incorrect');
             // 오답 노트에 추가 (메인 퀴즈 모드일 때만)
             if (currentMode !== 'review' && !isAlreadyIncorrect(currentQuestion)) {
@@ -439,7 +561,6 @@
             state.score++; // 오답 노트에서 맞춘 개수 증가
         }
 
-        document.getElementById('answer-input').disabled = true;
         transitionToNextState(true);
     }
 
@@ -577,6 +698,19 @@
             if (document.activeElement.classList.contains('essay-score-btn')) {
                 return;
             }
+            
+            // 다중 입력 필드에서 빈 칸은 엔터로 넘어가게 허용
+            if (document.activeElement.classList.contains('multi-answer-input')) {
+                const currentInput = document.activeElement;
+                const nextInput = currentInput.nextElementSibling;
+                
+                // 현재 인풋이 비어있고, 다음 인풋이 있다면 다음 인풋으로 포커스
+                if (!currentInput.value.trim() && nextInput && nextInput.classList.contains('multi-answer-input')) {
+                    nextInput.focus();
+                    return; // Enter 키가 check 버튼을 누르는 것을 방지
+                }
+            }
+
 
             if (!isAnswerChecked) {
                 handleCheck();
