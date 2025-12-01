@@ -178,8 +178,7 @@
     let shortQuizData = [];
     let essayQuizData = [];
 
-    // --- 오답 노트 상태 관리 (새로 추가됨) ---
-    // 오답 문제만 모으는 배열
+    // --- 오답 노트 상태 관리 ---
     let shortIncorrect = []; 
     let essayIncorrect = [];
     let reviewShuffled = [];
@@ -342,12 +341,6 @@
         document.getElementById('answer-input').style.display = isShortQuestion ? 'block' : 'none';
         document.getElementById('essay-input-area').style.display = isShortQuestion ? 'none' : 'block';
 
-        if (isShortQuestion) {
-            document.getElementById('answer-input').focus();
-        } else {
-            document.getElementById('essay-user-answer').focus();
-        }
-
         // 버튼 및 상태 초기화
         document.getElementById('check-button').style.display = 'inline-block';
         document.getElementById('check-button').disabled = false;
@@ -357,6 +350,26 @@
         const essayButtons = document.getElementById('essay-score-buttons');
         if (essayButtons) essayButtons.style.display = 'block';
         isAnswerChecked = false;
+        
+        // **********************************************
+        // 핵심 수정 사항: 다음 문제 로드 시 입력 필드에 바로 포커스
+        // **********************************************
+        setTimeout(() => {
+            const inputField = isShortQuestion 
+                ? document.getElementById('answer-input') 
+                : document.getElementById('essay-user-answer');
+            
+            // 기존에 포커스된 요소(특히 '다음 문제' 버튼)가 있다면 해제하고 포커스 이동
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+            
+            // 입력 필드가 실제로 화면에 보일 때 포커스를 줘야 함
+            if (inputField && inputField.style.display !== 'none') {
+                 inputField.focus();
+            }
+        }, 0); // 0ms delay로 DOM 업데이트 후 즉시 실행 보장
+        // **********************************************
     }
 
     // --- 정답 확인 핸들러 ---
@@ -480,7 +493,7 @@
         loadQuestion();
     }
     
-    // 오답 노트 초기화 기능 (새로 추가됨)
+    // 오답 노트 초기화 기능
     function resetIncorrectAnswers() {
         if (shortIncorrect.length === 0 && essayIncorrect.length === 0) {
             alert("오답 노트가 이미 비어있어!");
