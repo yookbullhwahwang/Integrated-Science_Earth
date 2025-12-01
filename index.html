@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>통합과학 학습지 마스터 퀴즈</title>
+    <title>통합과학 탭 분리 퀴즈 마스터</title>
     <style>
-        /* 다크 모드 스타일 */
+        /* 기본 다크 모드 스타일 유지 */
         body {
             font-family: 'Malgun Gothic', sans-serif;
             background-color: #1a1a1a;
@@ -31,176 +31,93 @@
             padding-bottom: 10px;
             margin-bottom: 30px;
         }
-        #quiz-status {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            color: #cccccc;
-        }
-        #question-box {
-            min-height: 150px;
+        /* 탭 버튼 스타일 */
+        .tab-buttons {
             display: flex;
-            flex-direction: column;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
             margin-bottom: 30px;
-            background-color: #383838;
-            border-radius: 10px;
         }
-        #question-text {
-            font-size: 1.4em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            line-height: 1.5;
-            text-align: left;
-            width: 100%;
-        }
-        #answer-input {
-            width: 80%;
-            padding: 12px;
-            font-size: 1.1em;
-            border: 2px solid #555;
-            border-radius: 8px;
-            background-color: #444;
-            color: #e0e0e0;
-            text-align: center;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        #answer-input:focus {
-            border-color: #8ab4f8;
-        }
-        /* 서술형 박스 스타일 */
-        .essay-input-container {
-            width: 90%;
-            margin: 10px auto;
-        }
-        .essay-input-container textarea {
-            width: 100%;
-            height: 100px;
-            padding: 10px;
-            font-size: 1em;
-            border: 2px solid #555;
-            border-radius: 8px;
-            background-color: #444;
-            color: #e0e0e0;
-            resize: vertical;
-            outline: none;
-            box-sizing: border-box;
-        }
-        #essay-answer-box {
-            background-color: #444;
-            border: 1px solid #666;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            text-align: left;
-            display: none;
-        }
-        #essay-answer-box h4 {
-            color: #8ab4f8;
-            margin-top: 0;
-        }
-        #essay-score-buttons {
-            margin-top: 10px;
-            text-align: center;
-        }
-        /* 버튼 스타일 */
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-        .quiz-button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-        #check-button {
-            background-color: #a8a8a8;
-            color: #1a1a1a;
-        }
-        #check-button:hover:not(:disabled) {
-            background-color: #cccccc;
-        }
-        #next-button {
-            background-color: #8ab4f8;
-            color: #1a1a1a;
-            display: none;
-        }
-        #next-button:hover:not(:disabled) {
-            background-color: #6a9ce7;
-        }
-        .essay-score-btn {
-            padding: 8px 15px;
-            font-size: 1em;
-            margin: 0 5px;
-        }
-        .correct-btn {
-            background-color: #85e085;
-            color: #1a1a1a;
-        }
-        .incorrect-btn {
-            background-color: #ff8a80;
-            color: #1a1a1a;
-        }
-        .result {
-            margin-top: 15px;
+        .tab-btn {
+            padding: 15px 30px;
             font-size: 1.2em;
             font-weight: bold;
-            min-height: 30px;
+            border: none;
+            cursor: pointer;
+            background-color: #383838;
+            color: #aaa;
+            border-radius: 10px 10px 0 0;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .correct {
-            color: #85e085;
+        .tab-btn.active {
+            background-color: #4a4a4a;
+            color: #8ab4f8;
+            border-bottom: 4px solid #8ab4f8;
         }
-        .incorrect {
-            color: #ff8a80;
+        .tab-btn:not(.active):hover {
+            background-color: #444;
         }
-        #final-score {
-            margin-top: 40px;
-            padding: 20px;
-            border: 2px solid #8ab4f8;
-            border-radius: 10px;
-            font-size: 1.3em;
-        }
-        .quiz-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        /* 퀴즈 영역 및 입력 스타일 (기존 유지) */
+        #quiz-status { font-size: 1.2em; margin-bottom: 20px; color: #cccccc; }
+        #question-box { min-height: 150px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; margin-bottom: 30px; background-color: #383838; border-radius: 10px; }
+        #question-text { font-size: 1.4em; font-weight: bold; margin-bottom: 20px; line-height: 1.5; text-align: left; width: 100%; }
+        #answer-input { width: 80%; padding: 12px; font-size: 1.1em; border: 2px solid #555; border-radius: 8px; background-color: #444; color: #e0e0e0; text-align: center; outline: none; transition: border-color 0.3s; }
+        #answer-input:focus { border-color: #8ab4f8; }
+        .essay-input-container { width: 90%; margin: 10px auto; }
+        .essay-input-container textarea { width: 100%; height: 100px; padding: 10px; font-size: 1em; border: 2px solid #555; border-radius: 8px; background-color: #444; color: #e0e0e0; resize: vertical; outline: none; box-sizing: border-box; }
+        #essay-answer-box { background-color: #444; border: 1px solid #666; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; display: none; }
+        #essay-answer-box h4 { color: #8ab4f8; margin-top: 0; }
+        #essay-score-buttons { margin-top: 10px; text-align: center; }
+        .button-group { display: flex; justify-content: center; gap: 15px; }
+        .quiz-button { padding: 12px 25px; font-size: 1.1em; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s, transform 0.1s; }
+        #check-button { background-color: #a8a8a8; color: #1a1a1a; }
+        #next-button { background-color: #8ab4f8; color: #1a1a1a; display: none; }
+        .essay-score-btn { padding: 8px 15px; font-size: 1em; margin: 0 5px; }
+        .correct-btn { background-color: #85e085; color: #1a1a1a; }
+        .incorrect-btn { background-color: #ff8a80; color: #1a1a1a; }
+        .result { margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 30px; }
+        .correct { color: #85e085; }
+        .incorrect { color: #ff8a80; }
+        #final-score { margin-top: 40px; padding: 20px; border: 2px solid #8ab4f8; border-radius: 10px; font-size: 1.3em; }
+        .quiz-button:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📚 통합과학 학습지 마스터 퀴즈</h1>
-    <div id="quiz-status"></div>
+    <h1>통합과학 탭 분리 퀴즈 마스터</h1>
 
-    <div id="quiz-area">
-        <div id="question-box">
-            <div id="question-text"></div>
-            <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="display: none;"/>
-            <div class="essay-input-container" id="essay-input-area" style="display: none;">
-                <textarea id="essay-user-answer" placeholder="답안을 서술하세요."></textarea>
-                <div id="essay-answer-box">
-                    <h4>📝 모범 답안</h4>
-                    <pre id="essay-correct-answer" style="white-space: pre-wrap; font-family: inherit;"></pre>
-                    <div id="essay-score-buttons">
-                        <p>위의 모범 답안과 비교하여 채점해주세요.</p>
-                        <button class="quiz-button essay-score-btn correct-btn" onclick="setEssayResult(true)">O (맞음)</button>
-                        <button class="quiz-button essay-score-btn incorrect-btn" onclick="setEssayResult(false)">X (틀림)</button>
+    <div class="tab-buttons">
+        <button class="tab-btn active" id="short-tab-btn" onclick="setMode('short')">단답형 퀴즈</button>
+        <button class="tab-btn" id="essay-tab-btn" onclick="setMode('essay')">서술형 퀴즈</button>
+    </div>
+
+    <div id="quiz-content-area">
+        <div id="quiz-status"></div>
+
+        <div id="quiz-area">
+            <div id="question-box">
+                <div id="question-text"></div>
+                <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="display: none;"/>
+                <div class="essay-input-container" id="essay-input-area" style="display: none;">
+                    <textarea id="essay-user-answer" placeholder="답안을 서술하세요."></textarea>
+                    <div id="essay-answer-box">
+                        <h4>모범 답안</h4>
+                        <pre id="essay-correct-answer" style="white-space: pre-wrap; font-family: inherit;"></pre>
+                        <div id="essay-score-buttons">
+                            <p>위의 모범 답안과 비교하여 채점해주세요.</p>
+                            <button class="quiz-button essay-score-btn correct-btn" onclick="setEssayResult(true)">O (맞음)</button>
+                            <button class="quiz-button essay-score-btn incorrect-btn" onclick="setEssayResult(false)">X (틀림)</button>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="result" id="result-text"></div>
             </div>
-            
-            <div class="result" id="result-text"></div>
-        </div>
 
-        <div class="button-group">
-            <button class="quiz-button" id="check-button" onclick="handleCheck()">Enter로 정답 확인</button>
-            <button class="quiz-button" id="next-button" onclick="nextQuestion()" style="display: none;">Space/Enter로 다음 문제</button>
+            <div class="button-group">
+                <button class="quiz-button" id="check-button" onclick="handleCheck()">Enter로 정답 확인</button>
+                <button class="quiz-button" id="next-button" onclick="nextQuestion()" style="display: none;">Space/Enter로 다음 문제</button>
+            </div>
         </div>
     </div>
 
@@ -208,57 +125,86 @@
 </div>
 
 <script>
-    // --- 퀴즈 데이터 정의 (학습지 전체 범위 반영) ---
-    // type: 'short' (단답형 자동 채점) 또는 'essay' (서술형 자가 채점)
-    const quizData = [
-        // --- PAGE 1 & 2: 과학기술의 발전과 한계 ---
-        [cite_start]{ type: "short", q: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은 무엇인가요? [cite: 12]", a: "스마트그리드" },
-        [cite_start]{ type: "short", q: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능한 기술은 무엇인가요? [cite: 12]", a: "정보통신기술" },
-        [cite_start]{ type: "short", q: "태양/풍력/수력 발전, 탄소 배출 감소, 에너지 저장 기술 등을 통해 지속 가능한 발전과 지구 환경 문제 해결에 도움을 주는 기술은 무엇인가요? [cite: 12]", a: "신재생에너지기술" },
-        [cite_start]{ type: "short", q: "드론이나 센서를 이용한 정밀 농업, 유전자 변형 작물, 수직 농업 등 식량 문제 해결에 기여하는 기술은 무엇인가요? [cite: 12]", a: "농업기술" },
-        [cite_start]{ type: "short", q: "MRI, CT, 첨단 영상 진단, 정밀 의학, 재생 의학 등을 통해 인간의 건강한 삶 유지에 기여하는 기술은 무엇인가요? [cite: 12]", a: "의학기술" },
-        [cite_start]{ type: "short", q: "인공지능 기술을 활용해 상황을 스스로 판단하며 자율적으로 움직이는 로봇은 무엇인가요? [cite: 12]", a: "인공지능로봇" },
-        [cite_start]{ type: "essay", q: "인공지능 로봇의 활용 예시 중, 공장에서의 활용과 그 효과를 서술하시오. [cite: 12]", a: "공장에서 반복적이고 위험한 작업을 수행합니다. 이를 통해 생산 효율성이 향상되고, 위험한 일에 실시간으로 적절하게 대처할 수 있습니다." },
-        [cite_start]{ type: "short", q: "사물에 센서와 통신 기술을 내장하고 인터넷에 연결하여 정보를 전송하고 통신하는 기술 (약자 포함)은 무엇인가요? [cite: 12]", a: "사물인터넷(IoT)" },
-        [cite_start]{ type: "short", q: "조명, 냉난방, 보안시스템 등을 스마트 기기로 제어하는 사물 인터넷 활용 예는 무엇인가요? [cite: 12]", a: "홈자동화" },
-        [cite_start]{ type: "short", q: "실시간 교통 정보를 분석, 조정하여 교통혼잡을 감소시키는 사물 인터넷 활용 예는 무엇인가요? [cite: 12]", a: "스마트교통시스템" },
-        [cite_start]{ type: "short", q: "환자의 데이터를 실시간으로 수집, 분석하여 효율적인 진료를 제공하는 사물 인터넷 활용 예는 무엇인가요? [cite: 20]", a: "스마트병원" },
-        [cite_start]{ type: "short", q: "생산 공정의 자동화로 생산성을 향상하고, 비용을 절감하며, 품질 관리를 강화하는 사물 인터넷 활용 예는 무엇인가요? [cite: 20]", a: "스마트공장" },
-        [cite_start]{ type: "short", q: "토양 수분, 기후 조건, 작물 성장 상태를 모니터링하여 농작물 생산성 향상시키는 사물 인터넷 활용 예는 무엇인가요? [cite: 20]", a: "스마트농업" },
-        [cite_start]{ type: "essay", q: "스마트팜(농업)에서 사물 인터넷 기술이 적용되는 구체적인 예시 3가지를 학습지 내용을 바탕으로 서술하시오. [cite: 20]", a: "1. 토양 센서를 이용하여 수분량, pH 농도, 온도 등을 측정하고, 기상 센서는 온도, 습도, 일사량, 강우 등을 모니터링 함.\n2. 자동 관개 시스템을 이용하여 필요한 양의 수분을 공급함.\n3. 작물의 영양 상태를 모니터링하고 필요한 비료와 영양소를 공급함." },
-        [cite_start]{ type: "essay", q: "바리스타 로봇의 장점 5가지를 모두 서술하시오. [cite: 23]", a: "1. 일관된 품질, 균일한 맛.\n2. 효율성, 인간보다 빠름.\n3. 비용 절감, 쉬지 않고 일함.\n4. 위생, 위생적 환경 관리.\n5. 다양성, 다양한 메뉴 가능." },
-        [cite_start]{ type: "essay", q: "바리스타 로봇의 단점 4가지와 이에 대한 개선 방안 3가지 이상을 서술하시오. [cite: 23]", a: "단점: 초기비용이 비쌈, 프로그램된 것만 만듬, 고장이나 오류 발생 가능, 객과 상호 작용이 없음.\n개선 방안: 음성 인식 프로그램 추가 (고객과 의사 소통), 커피 외에도 다양한 음료 제공, 사람과 비슷하게 팔과 얼굴을 만들어 간단한 표정을 지을 수 있도록 함, 로봇 운영을 위한 전문 인력 필요." },
-        [cite_start]{ type: "essay", q: "인공지능 기술 발전의 한계 6가지와 정보 통신 기술 발전의 한계 4가지를 각각 서술하시오. [cite: 24]", a: "인공지능 기술의 한계: 1. 프라이버시 침해, 2. 편견과 차별, 3. 일자리 감소, 4. 디지털 격차 발생, 5. 해킹 등 사이버 보안 위험, 6. 인공지능의 오남용.\n정보 통신 기술의 한계: 1. 정보 과부하, 2. 인터넷 중독, 3. 감시 사회, 4. 윤리적 갈등." },
-        [cite_start]{ type: "short", q: "매체 기술 발전의 한계로 나타나는 문제 중, 거짓 정보나 잘못된 정보가 퍼지는 것을 일컫는 말은 무엇인가요? [cite: 24]", a: "가짜뉴스" },
-
-        // --- PAGE 3: 과학 관련 사회적 쟁점 (SSI) ---
-        [cite_start]{ type: "short", q: "과학기술의 발전으로 나타나 다양한 사회 구성원들에게 논란을 일으키는 문제를 무엇이라고 하며, 약자는 무엇인가요? [cite: 37]", a: "과학관련사회적쟁점(SSI)" },
-        [cite_start]{ type: "short", q: "'Not In My Back Yard'의 약자로, 혐오 시설 등이 자신의 거주 지역에 들어오는 것을 반대하는 현상은? [cite: 43]", a: "NIMBY" },
-        [cite_start]{ type: "short", q: "'Please In My Front Yard'의 약자로, 이익이 되는 시설을 자기 거주 지역에 유치하려는 현상은? [cite: 43]", a: "PIMFY" },
-        [cite_start]{ type: "essay", q: "오래된 핵 발전소의 가동 중단에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오. [cite: 40]", a: "찬성: 가동 연한을 넘어서 가동하는 것은 위험하다.\n반대: 핵 발전으로 전기 에너지를 저렴하게 생산할 수 있으므로 바로 중단하면 경제적 손실이 크다." },
-        [cite_start]{ type: "essay", q: "유전자 변형 생물의 재배에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오. [cite: 40]", a: "찬성: 유전자 변형 생물은 질병에도 강하고 수확량도 많아 인류의 식량 문제를 해결할 수 있다.\n반대: 유전자 변형 생물이 인간에게 어떤 영향을 미치는지 구체적으로 연구되어 있지 않으므로 재배를 제한해야 한다." },
-        [cite_start]{ type: "essay", q: "신재생 에너지 활용 확대에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오. [cite: 40]", a: "찬성: 신재생 에너지 활용을 확대하면 환경 오염 물질의 배출이 줄어 지구 환경을 보호할 수 있다.\n반대: 초기 비용이 많이 들고, 발전 과정에서 주변 환경의 영향을 받아 안정적으로 전기를 생산하기 어려우므로 주력 에너지원으로 적합하지 않다." },
-        [cite_start]{ type: "essay", q: "동물 실험에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오. [cite: 40]", a: "찬성: 의약품, 화장품 등을 생산할 때 인간이 직접 실험 대상이 될 수 없으므로 동물 실험은 반드시 필요하다.\n반대: 안정성을 충분히 확보해 불필요한 동물 실험을 줄여야 한다." },
-        [cite_start]{ type: "essay", q: "과학 관련 사회적 쟁점에 대한 '합리적 의사 결정'을 위해 필요한 과정을 서술하시오. [cite: 45, 46]", a: "다양한 관점과 복잡한 상황을 과학적으로 이해하고, 충분한 토론을 거쳐 합리적으로 의사 결정을 내릴 수 있어야 한다." },
-
-        // --- PAGE 4: 과학 윤리 ---
-        [cite_start]{ type: "short", q: "과학기술을 연구하고, 이용할 때 윤리적 측면을 고려해 가치 판단 하는 것을 무엇이라고 하는가? [cite: 51]", a: "과학윤리" },
-        [cite_start]{ type: "essay", q: "과학기술이 바람직하게 발전하기 위해 과학 윤리를 지켜야 하는 이유를 서술하시오. [cite: 51]", a: "과학 기술의 발전이 가져올 과학 관련 사회적 쟁점을 예측하기 어렵기 때문에, 윤리적 태도를 갖추어 과학 기술이 긍정적으로 발전할 수 있도록 노력해야 한다." },
-        [cite_start]{ type: "short", q: "연구 절차와 결과를 조작하거나 거짓으로 만들어 내지 않고, 학문 발전을 위해 연구 내용을 공개하는 연구 윤리 항목은? [cite: 51]", a: "정직성과개방성" },
-        [cite_start]{ type: "short", q: "다른 과학자의 연구 결과를 함부로 사용하지 않는 연구 윤리 항목은? [cite: 51]", a: "지식재산권존중" },
-        [cite_start]{ type: "short", q: "실험 대상을 윤리적으로 대하여 실험 대상의 생명과 존엄성을 존중하는 연구 윤리 항목은? [cite: 51]", a: "실험대상에대한존중" },
-        [cite_start]{ type: "short", q: "사회에 악영향을 미치는 연구는 피하고, 공공의 이익을 위해 노력하는 연구 윤리 항목은? [cite: 51]", a: "사회적책임" },
-        [cite_start]{ type: "short", q: "안락사, 동물 실험, 배아 연구, 맞춤 아기 등과 관련된 과학 윤리의 구분 분야는? [cite: 60, 57]", a: "생명윤리" },
-        [cite_start]{ type: "short", q: "유전자 재조합, 줄기세포 연구, 인간 복제 등과 관련된 과학 윤리의 구분 분야는? [cite: 61, 57]", a: "유전공학" },
-        [cite_start]{ type: "short", q: "핵발전, 방사성 폐기물, 해양 자원의 이용 등과 관련된 과학 윤리의 구분 분야는? [cite: 64, 69]", a: "에너지" },
-        [cite_start]{ type: "short", q: "기후 변화, 미세 먼지, 생물종 감소 등과 관련된 과학 윤리의 구분 분야는? [cite: 63, 69]", a: "환경,생태계" },
-        [cite_start]{ type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는? [cite: 62, 58]", a: "기술공학" },
+    // --- 원본 퀴즈 데이터 정의 (모든 팩트를 담은 소스) ---
+    const sourceQuizData = [
+        // --- 단답형으로 사용될 데이터 (자동으로 서술형 역산 문제 생성에 사용됨) ---
+        { type: "short", q: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은 무엇인가요?", a: "스마트그리드" },
+        { type: "short", q: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능한 기술은 무엇인가요?", a: "정보통신기술" },
+        { type: "short", q: "태양/풍력/수력 발전, 탄소 배출 감소, 에너지 저장 기술 등을 통해 지속 가능한 발전과 지구 환경 문제 해결에 도움을 주는 기술은 무엇인가요?", a: "신재생에너지기술" },
+        { type: "short", q: "드론이나 센서를 이용한 정밀 농업, 유전자 변형 작물, 수직 농업 등 식량 문제 해결에 기여하는 기술은 무엇인가요?", a: "농업기술" },
+        { type: "short", q: "MRI, CT, 첨단 영상 진단, 정밀 의학, 재생 의학 등을 통해 인간의 건강한 삶 유지에 기여하는 기술은 무엇인가요?", a: "의학기술" },
+        { type: "short", q: "인공지능 기술을 활용해 상황을 스스로 판단하며 자율적으로 움직이는 로봇은 무엇인가요?", a: "인공지능로봇" },
+        { type: "short", q: "사물에 센서와 통신 기술을 내장하고 인터넷에 연결하여 정보를 전송하고 통신하는 기술 (약자 포함)은 무엇인가요?", a: "사물인터넷(IoT)" },
+        { type: "short", q: "조명, 냉난방, 보안시스템 등을 스마트 기기로 제어하는 사물 인터넷 활용 예는 무엇인가요?", a: "홈자동화" },
+        { type: "short", q: "실시간 교통 정보를 분석, 조정하여 교통혼잡을 감소시키는 사물 인터넷 활용 예는 무엇인가요?", a: "스마트교통시스템" },
+        { type: "short", q: "환자의 데이터를 실시간으로 수집, 분석하여 효율적인 진료를 제공하는 사물 인터넷 활용 예는 무엇인가요?", a: "스마트병원" },
+        { type: "short", q: "생산 공정의 자동화로 생산성을 향상하고, 비용을 절감하며, 품질 관리를 강화하는 사물 인터넷 활용 예는 무엇인가요?", a: "스마트공장" },
+        { type: "short", q: "토양 수분, 기후 조건, 작물 성장 상태를 모니터링하여 농작물 생산성 향상시키는 사물 인터넷 활용 예는 무엇인가요?", a: "스마트농업" },
+        { type: "short", q: "매체 기술 발전의 한계로 나타나는 문제 중, 거짓 정보나 잘못된 정보가 퍼지는 것을 일컫는 말은 무엇인가요?", a: "가짜뉴스" },
+        { type: "short", q: "과학기술의 발전으로 나타나 다양한 사회 구성원들에게 논란을 일으키는 문제를 무엇이라고 하며, 약자는 무엇인가요?", a: "과학관련사회적쟁점(SSI)" },
+        { type: "short", q: "'Not In My Back Yard'의 약자로, 혐오 시설 등이 자신의 거주 지역에 들어오는 것을 반대하는 현상은?", a: "NIMBY" },
+        { type: "short", q: "'Please In My Front Yard'의 약자로, 이익이 되는 시설을 자기 거주 지역에 유치하려는 현상은?", a: "PIMFY" },
+        { type: "short", q: "과학기술을 연구하고, 이용할 때 윤리적 측면을 고려해 가치 판단 하는 것을 무엇이라고 하는가?", a: "과학윤리" },
+        { type: "short", q: "연구 절차와 결과를 조작하거나 거짓으로 만들어 내지 않고, 학문 발전을 위해 연구 내용을 공개하는 연구 윤리 항목은?", a: "정직성과개방성" },
+        { type: "short", q: "다른 과학자의 연구 결과를 함부로 사용하지 않는 연구 윤리 항목은?", a: "지식재산권존중" },
+        { type: "short", q: "실험 대상을 윤리적으로 대하여 실험 대상의 생명과 존엄성을 존중하는 연구 윤리 항목은?", a: "실험대상에대한존중" },
+        { type: "short", q: "사회에 악영향을 미치는 연구는 피하고, 공공의 이익을 위해 노력하는 연구 윤리 항목은?", a: "사회적책임" },
+        { type: "short", q: "안락사, 동물 실험, 배아 연구, 맞춤 아기 등과 관련된 과학 윤리의 구분 분야는?", a: "생명윤리" },
+        { type: "short", q: "유전자 재조합, 줄기세포 연구, 인간 복제 등과 관련된 과학 윤리의 구분 분야는?", a: "유전공학" },
+        { type: "short", q: "핵발전, 방사성 폐기물, 해양 자원의 이용 등과 관련된 과학 윤리의 구분 분야는?", a: "에너지" },
+        { type: "short", q: "기후 변화, 미세 먼지, 생물종 감소 등과 관련된 과학 윤리의 구분 분야는?", a: "환경,생태계" },
+        { type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는?", a: "기술공학" },
+        
+        // --- 서술형 문제 (Original Essay Questions from PDF) ---
+        { type: "essay", q: "인공지능 로봇의 활용 예시 중, 공장에서의 활용과 그 효과를 서술하시오.", a: "공장에서 반복적이고 위험한 작업을 수행합니다. 이를 통해 생산 효율성이 향상되고, 위험한 일에 실시간으로 적절하게 대처할 수 있습니다." },
+        { type: "essay", q: "스마트팜(농업)에서 사물 인터넷 기술이 적용되는 구체적인 예시 3가지를 학습지 내용을 바탕으로 서술하시오.", a: "1. 토양 센서를 이용하여 수분량, pH 농도, 온도 등을 측정하고, 기상 센서는 온도, 습도, 일사량, 강우 등을 모니터링 함.\n2. 자동 관개 시스템을 이용하여 필요한 양의 수분을 공급함.\n3. 작물의 영양 상태를 모니터링하고 필요한 비료와 영양소를 공급함." },
+        { type: "essay", q: "바리스타 로봇의 장점 5가지를 모두 서술하시오.", a: "1. 일관된 품질, 균일한 맛.\n2. 효율성, 인간보다 빠름.\n3. 비용 절감, 쉬지 않고 일함.\n4. 위생, 위생적 환경 관리.\n5. 다양성, 다양한 메뉴 가능." },
+        { type: "essay", q: "바리스타 로봇의 단점 4가지와 이에 대한 개선 방안 3가지 이상을 서술하시오.", a: "단점: 초기비용이 비쌈, 프로그램된 것만 만듬, 고장이나 오류 발생 가능, 객과 상호 작용이 없음.\n개선 방안: 음성 인식 프로그램 추가 (고객과 의사 소통), 커피 외에도 다양한 음료 제공, 사람과 비슷하게 팔과 얼굴을 만들어 간단한 표정을 지을 수 있도록 함, 로봇 운영을 위한 전문 인력 필요." },
+        { type: "essay", q: "인공지능 기술 발전의 한계 6가지와 정보 통신 기술 발전의 한계 4가지를 각각 서술하시오.", a: "인공지능 기술의 한계: 1. 프라이버시 침해, 2. 편견과 차별, 3. 일자리 감소, 4. 디지털 격차 발생, 5. 해킹 등 사이버 보안 위험, 6. 인공지능의 오남용.\n정보 통신 기술의 한계: 1. 정보 과부하, 2. 인터넷 중독, 3. 감시 사회, 4. 윤리적 갈등." },
+        { type: "essay", q: "오래된 핵 발전소의 가동 중단에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 가동 연한을 넘어서 가동하는 것은 위험하다.\n반대: 핵 발전으로 전기 에너지를 저렴하게 생산할 수 있으므로 바로 중단하면 경제적 손실이 크다." },
+        { type: "essay", q: "유전자 변형 생물의 재배에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 유전자 변형 생물은 질병에도 강하고 수확량도 많아 인류의 식량 문제를 해결할 수 있다.\n반대: 유전자 변형 생물이 인간에게 어떤 영향을 미치는지 구체적으로 연구되어 있지 않으므로 재배를 제한해야 한다." },
+        { type: "essay", q: "신재생 에너지 활용 확대에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 신재생 에너지 활용을 확대하면 환경 오염 물질의 배출이 줄어 지구 환경을 보호할 수 있다.\n반대: 초기 비용이 많이 들고, 발전 과정에서 주변 환경의 영향을 받아 안정적으로 전기를 생산하기 어려우므로 주력 에너지원으로 적합하지 않다." },
+        { type: "essay", q: "동물 실험에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 의약품, 화장품 등을 생산할 때 인간이 직접 실험 대상이 될 수 없으므로 동물 실험은 반드시 필요하다.\n반대: 안정성을 충분히 확보해 불필요한 동물 실험을 줄여야 한다." },
+        { type: "essay", q: "과학 관련 사회적 쟁점에 대한 '합리적 의사 결정'을 위해 필요한 과정을 서술하시오.", a: "다양한 관점과 복잡한 상황을 과학적으로 이해하고, 충분한 토론을 거쳐 합리적으로 의사 결정을 내릴 수 있어야 한다." },
+        { type: "essay", q: "과학기술이 바람직하게 발전하기 위해 과학 윤리를 지켜야 하는 이유를 서술하시오.", a: "과학 기술의 발전이 가져올 과학 관련 사회적 쟁점을 예측하기 어렵기 때문에, 윤리적 태도를 갖추어 과학 기술이 긍정적으로 발전할 수 있도록 노력해야 한다." },
     ];
 
-    let shuffledQuiz = [];
-    let currentQuestionIndex = 0;
-    let score = 0;
-    let isAnswerChecked = false;
+    let shortQuizData = [];
+    let essayQuizData = [];
+
+    // --- 퀴즈 상태 관리 ---
+    let currentMode = 'short'; // 현재 모드: 'short' 또는 'essay'
+    const quizState = {
+        short: { index: 0, score: 0, shuffled: [] },
+        essay: { index: 0, score: 0, shuffled: [] }
+    };
+
+    let isAnswerChecked = false; // 정답 확인 상태 플래그
+
+    // --- 문제 데이터 초기화 및 생성 ---
+    function initializeQuizData() {
+        shortQuizData = sourceQuizData.filter(q => q.type === 'short');
+        
+        // 1. 기존 서술형 문제 가져오기
+        essayQuizData = sourceQuizData.filter(q => q.type === 'essay');
+
+        // 2. 단답형 문제를 역산하여 서술형 문제로 변환 (요청 사항)
+        shortQuizData.forEach(q => {
+            const topic = q.a.replace(/(\(|\))/g, '').replace(/,/g, '/'); // 괄호와 쉼표 제거/대체하여 주제를 명확히 함
+            const reversedQ = `다음 과학기술/개념에 대해 서술하시오. (${q.a})`;
+            const reversedA = q.q; // 원래 질문이 새로운 서술형의 답이 됨
+
+            essayQuizData.push({
+                type: 'essay',
+                q: reversedQ,
+                a: reversedA 
+            });
+        });
+        
+        // 초기 셔플
+        quizState.short.shuffled = shuffleArray([...shortQuizData]);
+        quizState.essay.shuffled = shuffleArray([...essayQuizData]);
+    }
 
     // Fisher-Yates 셔플 알고리즘
     function shuffleArray(array) {
@@ -269,26 +215,37 @@
         return array;
     }
 
-    function startGame() {
-        // 문제 셔플
-        shuffledQuiz = shuffleArray([...quizData]);
-        currentQuestionIndex = 0;
-        score = 0;
+    // --- 탭 모드 변경 ---
+    function setMode(mode) {
+        if (currentMode === mode) return;
+
+        currentMode = mode;
+        
+        // 탭 버튼 스타일 변경
+        document.getElementById('short-tab-btn').classList.remove('active');
+        document.getElementById('essay-tab-btn').classList.remove('active');
+        document.getElementById(`${mode}-tab-btn`).classList.add('active');
+
+        // 퀴즈 상태 초기화 및 로드
+        loadQuestion();
         document.getElementById('final-score').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        loadQuestion();
     }
 
+    // --- 퀴즈 로드 ---
     function loadQuestion() {
-        if (currentQuestionIndex >= shuffledQuiz.length) {
+        const state = quizState[currentMode];
+        
+        if (state.index >= state.shuffled.length) {
             showFinalScore();
             return;
         }
 
-        const currentQuestion = shuffledQuiz[currentQuestionIndex];
+        const currentQuestion = state.shuffled[state.index];
         
         // 상태 업데이트
-        document.getElementById('quiz-status').textContent = `문제 ${currentQuestionIndex + 1} / ${shuffledQuiz.length} (현재 점수: ${score}점)`;
+        document.getElementById('quiz-status').textContent = 
+            `${currentMode === 'short' ? '단답형' : '서술형'} 문제 ${state.index + 1} / ${state.shuffled.length} (현재 점수: ${state.score}점)`;
         
         // 문제 내용 업데이트
         document.getElementById('question-text').textContent = currentQuestion.q;
@@ -300,38 +257,33 @@
         document.getElementById('essay-user-answer').value = '';
         document.getElementById('essay-answer-box').style.display = 'none';
 
-        // 문제 유형에 따라 입력 필드 토글
-        if (currentQuestion.type === 'short') {
-            document.getElementById('answer-input').style.display = 'block';
-            document.getElementById('essay-input-area').style.display = 'none';
+        // 유형에 따라 입력 필드 토글 (모드에 따라 Short/Essay 필드 활성화)
+        const isShortMode = currentMode === 'short';
+        document.getElementById('answer-input').style.display = isShortMode ? 'block' : 'none';
+        document.getElementById('essay-input-area').style.display = isShortMode ? 'none' : 'block';
+
+        if (isShortMode) {
             document.getElementById('answer-input').focus();
-        } else { // essay
-            document.getElementById('answer-input').style.display = 'none';
-            document.getElementById('essay-input-area').style.display = 'block';
+        } else {
             document.getElementById('essay-user-answer').focus();
         }
 
         // 버튼 및 상태 초기화
         document.getElementById('check-button').style.display = 'inline-block';
-        document.getElementById('check-button').disabled = false; // 서술형 버튼 다시 활성화
+        document.getElementById('check-button').disabled = false;
         document.getElementById('next-button').style.display = 'none';
         document.getElementById('answer-input').disabled = false;
         document.getElementById('essay-user-answer').disabled = false;
-        
-        // 서술형 버튼 숨겨진 상태 복원
         const essayButtons = document.getElementById('essay-score-buttons');
-        if (essayButtons) essayButtons.style.display = 'block'; 
-
+        if (essayButtons) essayButtons.style.display = 'block';
         isAnswerChecked = false;
     }
 
-    // 정답 확인 버튼 처리
+    // --- 정답 확인 핸들러 ---
     function handleCheck() {
         if (isAnswerChecked) return;
 
-        const currentQuestion = shuffledQuiz[currentQuestionIndex];
-
-        if (currentQuestion.type === 'short') {
+        if (currentMode === 'short') {
             checkShortAnswer();
         } else { // essay
             showEssayAnswer();
@@ -340,50 +292,51 @@
 
     // 단답형 자동 채점
     function checkShortAnswer() {
-        const currentQuestion = shuffledQuiz[currentQuestionIndex];
+        const state = quizState.short;
+        const currentQuestion = state.shuffled[state.index];
         const userAnswer = document.getElementById('answer-input').value.replace(/\s/g, '').toLowerCase();
         const correctAnswer = currentQuestion.a.replace(/\s/g, '').toLowerCase();
         const resultText = document.getElementById('result-text');
         
         if (userAnswer === correctAnswer) {
-            resultText.textContent = '✅ 정답입니다!';
+            resultText.textContent = '정답입니다!';
             resultText.classList.add('correct');
-            score++;
+            state.score++;
         } else {
-            resultText.textContent = `❌ 오답입니다! 정답: ${currentQuestion.a}`;
+            resultText.textContent = `오답입니다! 정답: ${currentQuestion.a}`;
             resultText.classList.add('incorrect');
         }
         
-        // 채점 후 상태 변경
         document.getElementById('answer-input').disabled = true;
         transitionToNextState(true);
     }
 
     // 서술형 모범 답안 표시 (자가 채점 시작)
     function showEssayAnswer() {
-        const currentQuestion = shuffledQuiz[currentQuestionIndex];
+        const state = quizState.essay;
+        const currentQuestion = state.shuffled[state.index];
         document.getElementById('essay-user-answer').disabled = true;
         
         const answerBox = document.getElementById('essay-answer-box');
-        document.getElementById('essay-correct-answer').textContent = currentQuestion.a; // 모범 답안 표시 (pre-wrap으로 줄바꿈 유지)
+        document.getElementById('essay-correct-answer').textContent = currentQuestion.a;
         answerBox.style.display = 'block';
 
         const resultText = document.getElementById('result-text');
-        resultText.textContent = '👆 모범 답안과 비교 후 정답 여부를 선택해주세요.';
+        resultText.textContent = '모범 답안과 비교 후 정답 여부를 선택해주세요.';
         resultText.className = 'result';
 
-        // 정답 확인 버튼 비활성화 (자가 채점 버튼으로 전환)
         document.getElementById('check-button').disabled = true;
     }
 
     // 서술형 자가 채점 결과 반영
     function setEssayResult(isCorrect) {
+        const state = quizState.essay;
         const resultText = document.getElementById('result-text');
 
         if (isCorrect) {
             resultText.textContent = 'O (맞음)으로 채점되었습니다. 잘했어요!';
             resultText.classList.add('correct');
-            score++;
+            state.score++;
         } else {
             resultText.textContent = 'X (틀림)으로 채점되었습니다. 정답을 확인하세요!';
             resultText.classList.add('incorrect');
@@ -392,14 +345,13 @@
         transitionToNextState(true);
     }
 
-    // 다음 문제로 넘어갈 수 있는 상태로 전환
+    // 다음 문제 상태로 전환
     function transitionToNextState(focusNext = false) {
         isAnswerChecked = true;
         document.getElementById('check-button').style.display = 'none';
         document.getElementById('next-button').style.display = 'inline-block';
         
-        // 서술형일 경우 자가 채점 버튼 비활성화
-        if (shuffledQuiz[currentQuestionIndex].type === 'essay') {
+        if (currentMode === 'essay') {
             const essayButtons = document.getElementById('essay-score-buttons');
             if (essayButtons) essayButtons.style.display = 'none';
         }
@@ -409,26 +361,38 @@
         }
     }
 
-
+    // 다음 문제로 이동
     function nextQuestion() {
         if (!isAnswerChecked) return;
-        currentQuestionIndex++;
+        quizState[currentMode].index++;
         loadQuestion();
     }
 
+    // 최종 점수 표시
     function showFinalScore() {
         const finalScoreDiv = document.getElementById('final-score');
-        const totalQuestions = shuffledQuiz.length;
-        const percentage = ((score / totalQuestions) * 100).toFixed(1);
+        const state = quizState[currentMode];
+        const totalQuestions = state.shuffled.length;
+        const percentage = ((state.score / totalQuestions) * 100).toFixed(1);
 
         finalScoreDiv.innerHTML = `
-            <h2>🎉 퀴즈 종료 🎉</h2>
-            <p>총 ${totalQuestions} 문제 중 <strong>${score}문제</strong> 정답!</p>
+            <h2>${currentMode === 'short' ? '단답형' : '서술형'} 퀴즈 종료</h2>
+            <p>총 ${totalQuestions} 문제 중 <strong>${state.score}문제</strong> 정답!</p>
             <p>정답률: <strong>${percentage}%</strong></p>
             <button class="quiz-button" style="background-color: #4CAF50; color: #1a1a1a; margin-top: 20px;" onclick="startGame()">다시 시작하기</button>
         `;
         document.getElementById('quiz-area').style.display = 'none';
         finalScoreDiv.style.display = 'block';
+    }
+
+    // --- 퀴즈 시작 ---
+    function startGame() {
+        initializeQuizData(); // 데이터 초기화 및 서술형 문제 생성
+        // 상태 초기화
+        quizState.short.index = 0; quizState.short.score = 0;
+        quizState.essay.index = 0; quizState.essay.score = 0;
+
+        loadQuestion();
     }
 
     // --- 키보드 이벤트 핸들러 ---
@@ -441,20 +405,16 @@
             event.preventDefault();
 
             if (!isAnswerChecked) {
-                // 정답 확인 전: Enter -> handleCheck (단답형 채점 또는 서술형 모범 답안 표시)
                 handleCheck();
             } else {
-                // 정답 확인 후: Enter -> nextQuestion
                 nextQuestion();
             }
         } else if (event.key === ' ' && isAnswerChecked) {
-            // 정답 확인 후: Spacebar -> nextQuestion
             event.preventDefault(); 
             nextQuestion();
         }
     });
 
-    // 퀴즈 시작
     window.onload = startGame;
 </script>
 
