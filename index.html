@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합과학 퀴즈 프로그램</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .question-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .question-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .question-box {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background-color: #fff;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .answer-button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        .answer-button:hover {
+            background-color: #218838;
+        }
+        .check-button {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .check-button:hover {
+            background-color: #e0a800;
+        }
+        .reset-button {
+            background-color: #dc3545;
+        }
+        .reset-button:hover {
+            background-color: #c82333;
+        }
+        .result {
+            font-weight: bold;
+            padding: 5px 0;
+            margin-top: 5px;
+        }
+        .correct {
+            color: #28a745;
+        }
+        .incorrect {
+            color: #dc3545;
+        }
+        .short-answer-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        /* 서술형 스타일 */
+        .essay-answer-box {
+            display: none; /* 초기에는 정답 숨김 */
+            margin-top: 15px;
+            padding: 15px;
+            border-top: 2px dashed #007bff;
+            background-color: #e9f7ff;
+            border-radius: 6px;
+        }
+        .essay-answer-box h4 {
+            color: #007bff;
+            margin-top: 0;
+        }
+        .essay-answer-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .essay-answer-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .essay-answer-item span {
+            flex-grow: 1;
+        }
+        #essay-score-display {
+            font-size: 1.2em;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .final-score {
+            font-size: 1.5em;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            background-color: #e9f7ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📚 통합과학 퀴즈</h1>
+
+    <div id="quiz-container">
+        </div>
+
+    <div class="final-score" id="final-score-display" style="display: none;"></div>
+
+    <button class="answer-button check-button" onclick="checkShortAnswers()">단답형 정답 확인</button>
+    <button class="answer-button reset-button" onclick="resetQuiz()">다시 풀기</button>
+</div>
+
+<script>
+    // 퀴즈 데이터 정의
+    const quizData = [
+        // --- 단답형 문제 ---
+        {
+            type: "short",
+            question: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능한 기술은 무엇일까요?",
+            answer: "정보통신기술", // 띄어쓰기 무시되므로 "정보 통신 기술"도 가능
+            id: "short1"
+        },
+        {
+            type: "short",
+            question: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은 무엇일까요?",
+            answer: "스마트그리드",
+            id: "short2"
+        },
+        {
+            type: "short",
+            question: "사물에 센서와 통신 기술을 내장하고 인터넷에 연결하여 정보를 전송하고 통신하는 기술을 무엇이라고 할까요? (약자 포함)",
+            answer: "사물인터넷(IoT)",
+            id: "short3"
+        },
+        // --- 서술형 문제 ---
+        {
+            type: "essay",
+            question: "바리스타 로봇의 장점을 모두 서술하시오.",
+            answers: [
+                "일관된 품질, 균일한 맛.",
+                "효율성, 인간보다 빠름.",
+                "비용 절감, 쉬지않고 일함.",
+                "위생, 위생적 환경 관리.",
+                "다양성, 다양한 메뉴 가능."
+            ],
+            id: "essay1"
+        },
+        {
+            type: "essay",
+            question: "인공지능 기술 발전의 주요 한계점 6가지를 서술하시오. (예: 프라이버시 침해)",
+            answers: [
+                "프라이버시 침해",
+                "편견과 차별",
+                "일자리 감소",
+                "디지털 격차 발생",
+                "해킹 등 사이버 보안 위험",
+                "인공지능의 오남용"
+            ],
+            id: "essay2"
+        },
+        {
+            type: "essay",
+            question: "스마트팜(농업)에서 사물 인터넷 기술이 적용되는 3가지 예시를 서술하시오.",
+            answers: [
+                "토양 센서를 이용하여 수분량, pH 농도, 온도 등을 측정하고, 기상 센서는 온도, 습도, 일사량, 강우 등을 모니터링 함.",
+                "자동 관개 시스템을 이용하여 필요한 양의 수분을 공급함.",
+                "작물의 영양 상태를 모니터링하고 필요한 비료와 영양소를 공급함."
+            ],
+            id: "essay3"
+        }
+    ];
+
+    // 퀴즈를 HTML에 동적으로 생성하는 함수
+    function loadQuiz() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        
+        // 단답형 섹션
+        let shortAnswerHTML = '<div class="question-section" id="short-answers"><h2>단답형 문제 (자동 채점)</h2>';
+        quizData.filter(q => q.type === 'short').forEach((q, index) => {
+            shortAnswerHTML += `
+                <div class="question-box">
+                    <p><strong>${index + 1}.</strong> ${q.question}</p>
+                    <input type="text" id="${q.id}-input" data-answer="${q.answer.replace(/\s/g, '').toLowerCase()}" placeholder="정답을 입력하세요" />
+                    <div class="result" id="${q.id}-result"></div>
+                </div>
+            `;
+        });
+        shortAnswerHTML += '</div>';
+        container.innerHTML += shortAnswerHTML;
+
+        // 서술형 섹션
+        let essayHTML = '<div class="question-section" id="essay-answers"><h2>서술형 문제 (자가 채점)</h2><div id="essay-score-display"></div>';
+        quizData.filter(q => q.type === 'essay').forEach((q, index) => {
+            // 서술형 답안 입력 필드는 답의 개수만큼 생성
+            const answerInputs = q.answers.map((ans, idx) => 
+                `<input type="text" class="short-answer-input" id="${q.id}-input-${idx}" placeholder="${idx + 1}번째 답안을 입력하세요" />`
+            ).join('');
+
+            // 모범 답안 체크박스 목록
+            const correctAnswerList = q.answers.map((ans, idx) => 
+                `<div class="essay-answer-item">
+                    <input type="checkbox" id="${q.id}-check-${idx}" data-index="${idx}" onchange="updateEssayScore('${q.id}')">
+                    <span>${ans}</span>
+                </div>`
+            ).join('');
+
+            essayHTML += `
+                <div class="question-box" data-essay-id="${q.id}">
+                    <p><strong>${index + 1}.</strong> ${q.question}</p>
+                    ${answerInputs}
+                    <button class="answer-button" onclick="toggleEssayAnswer('${q.id}')">모범 답안 보기/숨기기</button>
+                    
+                    <div class="essay-answer-box" id="${q.id}-answer-box" data-total-answers="${q.answers.length}">
+                        <h4>✍️ 모범 답안</h4>
+                        <p><strong>정답과 비교 후, 틀린 문항에 체크하세요.</strong></p>
+                        ${correctAnswerList}
+                        <div class="result" id="${q.id}-score"></div>
+                    </div>
+                </div>
+            `;
+        });
+        essayHTML += '</div>';
+        container.innerHTML += essayHTML;
+
+        updateEssayScoreDisplay();
+    }
+
+    // 단답형 문제 자동 채점 함수
+    function checkShortAnswers() {
+        let correctCount = 0;
+        let totalCount = 0;
+
+        quizData.filter(q => q.type === 'short').forEach(q => {
+            const inputElement = document.getElementById(`${q.id}-input`);
+            const resultElement = document.getElementById(`${q.id}-result`);
+            const userAnswer = inputElement.value.replace(/\s/g, '').toLowerCase(); // 띄어쓰기 제거, 소문자 변환
+            const correctAnswer = q.answer.replace(/\s/g, '').toLowerCase();
+
+            resultElement.classList.remove('correct', 'incorrect');
+            totalCount++;
+
+            if (userAnswer === correctAnswer) {
+                resultElement.textContent = '✅ 정답입니다!';
+                resultElement.classList.add('correct');
+                correctCount++;
+            } else if (userAnswer === "") {
+                 resultElement.textContent = '❌ 답을 입력해 주세요.';
+                 resultElement.classList.add('incorrect');
+            } else {
+                resultElement.textContent = `❌ 오답입니다! (정답: ${q.answer})`;
+                resultElement.classList.add('incorrect');
+            }
+        });
+        
+        // 최종 점수 표시
+        const finalScoreDisplay = document.getElementById('final-score-display');
+        const shortAnswerCorrect = correctCount;
+        const shortAnswerTotal = totalCount;
+        const essayIncorrect = calculateTotalEssayIncorrect();
+
+        finalScoreDisplay.style.display = 'block';
+        finalScoreDisplay.innerHTML = `
+            <h2>최종 채점 결과</h2>
+            <p><strong>단답형 점수:</strong> ${shortAnswerCorrect} / ${shortAnswerTotal} 문제 정답</p>
+            <p><strong>서술형 자가 채점 결과:</strong> 틀린 문항 ${essayIncorrect}개</p>
+            <p><strong>🔥 수고하셨습니다!</strong></p>
+        `;
+    }
+
+    // 서술형 문제 모범 답안 토글 함수
+    function toggleEssayAnswer(id) {
+        const answerBox = document.getElementById(`${id}-answer-box`);
+        const isVisible = answerBox.style.display === 'block';
+        answerBox.style.display = isVisible ? 'none' : 'block';
+    }
+
+    // 서술형 문제 틀린 개수 업데이트 함수
+    function updateEssayScore(id) {
+        const answerBox = document.getElementById(`${id}-answer-box`);
+        const checkboxes = answerBox.querySelectorAll('input[type="checkbox"]');
+        const totalAnswers = parseInt(answerBox.dataset.totalAnswers);
+        let incorrectCount = 0;
+        
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                incorrectCount++;
+            }
+        });
+        
+        const scoreElement = document.getElementById(`${id}-score`);
+        const correctCount = totalAnswers - incorrectCount;
+        
+        scoreElement.textContent = `현재 틀린 문항: ${incorrectCount}개 (총 ${totalAnswers}개 중 ${correctCount}개 맞음으로 가정)`;
+        scoreElement.classList.remove('correct', 'incorrect');
+        if (incorrectCount > 0) {
+            scoreElement.classList.add('incorrect');
+        } else {
+            scoreElement.classList.add('correct');
+        }
+
+        updateEssayScoreDisplay();
+    }
+
+    // 전체 서술형 틀린 개수 표시 업데이트
+    function updateEssayScoreDisplay() {
+        const totalIncorrect = calculateTotalEssayIncorrect();
+        const display = document.getElementById('essay-score-display');
+        display.textContent = `💡 서술형 총 틀린 문항: ${totalIncorrect}개`;
+        if (totalIncorrect > 0) {
+            display.style.color = '#dc3545';
+        } else {
+            display.style.color = '#28a745';
+        }
+    }
+
+    // 전체 서술형 틀린 개수 계산
+    function calculateTotalEssayIncorrect() {
+        let totalIncorrect = 0;
+        quizData.filter(q => q.type === 'essay').forEach(q => {
+            const answerBox = document.getElementById(`${q.id}-answer-box`);
+            if (answerBox) { // answerBox가 존재하는 경우에만 처리
+                const checkboxes = answerBox.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        totalIncorrect++;
+                    }
+                });
+            }
+        });
+        return totalIncorrect;
+    }
+
+    // 퀴즈 초기화 함수
+    function resetQuiz() {
+        if (confirm('정말 퀴즈를 처음부터 다시 시작하시겠습니까?')) {
+            // 모든 입력 필드 초기화
+            document.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+            // 모든 결과 메시지 초기화
+            document.querySelectorAll('.result').forEach(result => {
+                result.textContent = '';
+                result.classList.remove('correct', 'incorrect');
+            });
+            // 서술형 체크박스 초기화
+            document.querySelectorAll('.essay-answer-box input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            // 서술형 점수 및 박스 숨기기
+            quizData.filter(q => q.type === 'essay').forEach(q => {
+                 const answerBox = document.getElementById(`${q.id}-answer-box`);
+                 if (answerBox) answerBox.style.display = 'none';
+                 updateEssayScore(q.id); // 점수 표시 업데이트
+            });
+            // 최종 점수 숨기기
+            document.getElementById('final-score-display').style.display = 'none';
+        }
+    }
+
+    // 페이지 로드 시 퀴즈 생성
+    window.onload = loadQuiz;
+</script>
+
+</body>
+</html>
