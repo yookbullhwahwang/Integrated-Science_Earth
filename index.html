@@ -133,7 +133,7 @@
 <script>
     // --- 원본 퀴즈 데이터 정의 (모든 팩트를 담은 소스) ---
     const sourceQuizData = [
-        // --- 단답형으로 사용될 데이터 (자동으로 서술형 역산 문제 생성에 사용됨) ---
+        // --- 기존 단답형 문제 (26개) ---
         { type: "short", q: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은 무엇인가요?", a: "스마트그리드", id: "s-1" },
         { type: "short", q: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능한 기술은 무엇인가요?", a: "정보통신기술", id: "s-2" },
         { type: "short", q: "태양/풍력/수력 발전, 탄소 배출 감소, 에너지 저장 기술 등을 통해 지속 가능한 발전과 지구 환경 문제 해결에 도움을 주는 기술은 무엇인가요?", a: "신재생에너지기술", id: "s-3" },
@@ -161,7 +161,17 @@
         { type: "short", q: "기후 변화, 미세 먼지, 생물종 감소 등과 관련된 과학 윤리의 구분 분야는?", a: "환경,생태계", id: "s-25" },
         { type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는?", a: "기술공학", id: "s-26" },
         
-        // --- 서술형 문제 (Original Essay Questions from PDF) ---
+        // --- ★ 신규 추가된 단답형 문제 (과학 윤리 분야별 사례) ---
+        { type: "short", q: "안락사, 동물 실험, 배아 연구, 맞춤 아기, 인공 수정, 냉동 인간 등과 관련된 과학 윤리의 구분 분야는?", a: "생명윤리", id: "s-27" },
+        { type: "short", q: "유전자 재조합, 줄기세포 연구, 유전자 변형 생물, 인간 복제 등과 관련된 과학 윤리의 구분 분야는?", a: "유전공학", id: "s-28" },
+        { type: "short", q: "나노 기술, 로봇, 식량 자원, 우주 항해, 우주 탐사선의 핵연료, 드론 사용 범위 등과 관련된 과학 윤리의 구분 분야는?", a: "기술공학", id: "s-29" },
+        { type: "short", q: "기후 변화, 지구 온난화, 탄소 배출권, 자원 개발, 댐 건설, 미세 먼지, 생물종 감소, 광공해, 독성 화학 물질의 농축, 수돗물의 불소화 등과 관련된 과학 윤리의 구분 분야는?", a: "환경,생태계", id: "s-30" },
+        { type: "short", q: "핵발전, 핵발전 사고, 방사성 폐기물, 해양 자원의 이용 등과 관련된 과학 윤리의 구분 분야는?", a: "에너지", id: "s-31" },
+        { type: "short", q: "현대 의약품 개발, 성장 호르몬, 비만과 다이어트, 항생재 남용 등과 관련된 과학 윤리의 구분 분야는?", a: "의료,질병", id: "s-32" },
+        { type: "short", q: "표절, 정신이상의 처벌, 과속과 교통사고 등과 관련된 과학 윤리의 구분 분야는?", a: "법,도덕", id: "s-33" },
+        { type: "short", q: "지구촌 혐오, 환경 호르몬, 가상현실, 급발진 사고, 전자파 피해 등과 관련된 과학 윤리의 구분 분야는?", a: "기타", id: "s-34" },
+        
+        // --- 기존 서술형 문제 (11개) ---
         { type: "essay", q: "인공지능 로봇의 활용 예시 중, 공장에서의 활용과 그 효과를 서술하시오.", a: "공장에서 반복적이고 위험한 작업을 수행합니다. 이를 통해 생산 효율성이 향상되고, 위험한 일에 실시간으로 적절하게 대처할 수 있습니다.", id: "e-1" },
         { type: "essay", q: "스마트팜(농업)에서 사물 인터넷 기술이 적용되는 구체적인 예시 3가지를 학습지 내용을 바탕으로 서술하시오.", a: "1. 토양 센서를 이용하여 수분량, pH 농도, 온도 등을 측정하고, 기상 센서는 온도, 습도, 일사량, 강우 등을 모니터링 함.\n2. 자동 관개 시스템을 이용하여 필요한 양의 수분을 공급함.\n3. 작물의 영양 상태를 모니터링하고 필요한 비료와 영양소를 공급함.", id: "e-2" },
         { type: "essay", q: "바리스타 로봇의 장점 5가지를 모두 서술하시오.", a: "1. 일관된 품질, 균일한 맛.\n2. 효율성, 인간보다 빠름.\n3. 비용 절감, 쉬지 않고 일함.\n4. 위생, 위생적 환경 관리.\n5. 다양성, 다양한 메뉴 가능.", id: "e-3" },
@@ -173,6 +183,16 @@
         { type: "essay", q: "동물 실험에 대한 '찬성' 입장과 '반대' 입장의 주된 근거를 각각 서술하시오.", a: "찬성: 의약품, 화장품 등을 생산할 때 인간이 직접 실험 대상이 될 수 없으므로 동물 실험은 반드시 필요하다.\n반대: 안정성을 충분히 확보해 불필요한 동물 실험을 줄여야 한다.", id: "e-9" },
         { type: "essay", q: "과학 관련 사회적 쟁점에 대한 '합리적 의사 결정'을 위해 필요한 과정을 서술하시오.", a: "다양한 관점과 복잡한 상황을 과학적으로 이해하고, 충분한 토론을 거쳐 합리적으로 의사 결정을 내릴 수 있어야 한다.", id: "e-10" },
         { type: "essay", q: "과학기술이 바람직하게 발전하기 위해 과학 윤리를 지켜야 하는 이유를 서술하시오.", a: "과학 기술의 발전이 가져올 과학 관련 사회적 쟁점을 예측하기 어렵기 때문에, 윤리적 태도를 갖추어 과학 기술이 긍정적으로 발전할 수 있도록 노력해야 한다.", id: "e-11" },
+        
+        // --- ★ 신규 추가된 서술형 문제 (과학 윤리 분야별 사례) ---
+        { type: "essay", q: "생명윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "안락사, 동물 실험, 배아 연구, 맞춤 아기, 인공 수정, 냉동 인간 등", id: "e-12" },
+        { type: "essay", q: "유전공학의 중요성이 요구되는 사례를 모두 서술하시오.", a: "유전자 재조합, 줄기세포 연구, 유전자 변형 생물, 인간 복제 등", id: "e-13" },
+        { type: "essay", q: "기술공학의 중요성이 요구되는 사례를 모두 서술하시오.", a: "나노 기술, 로봇, 식량 자원, 우주 항해, 우주 탐사선의 핵연료, 드론 사용 범위 등", id: "e-14" },
+        { type: "essay", q: "환경, 생태계 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "기후 변화, 지구 온난화, 탄소 배출권, 자원 개발, 댐 건설, 미세 먼지, 생물종 감소, 광공해, 독성 화학 물질의 농축, 수돗물의 불소화 등", id: "e-15" },
+        { type: "essay", q: "에너지 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "핵발전, 핵발전 사고, 방사성 폐기물, 해양 자원의 이용 등", id: "e-16" },
+        { type: "essay", q: "의료, 질병 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "현대 의약품 개발, 성장 호르몬, 비만과 다이어트, 항생재 남용 등", id: "e-17" },
+        { type: "essay", q: "법, 도덕 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "표절, 정신이상의 처벌, 과속과 교통사고 등", id: "e-18" },
+        { type: "essay", q: "기타 분야에서 과학 윤리의 중요성이 요구되는 사례를 모두 서술하시오.", a: "지구촌 혐오, 환경 호르몬, 가상현실, 급발진 사고, 전자파 피해 등", id: "e-19" },
     ];
 
     let shortQuizData = [];
@@ -195,18 +215,20 @@
 
     // --- 문제 데이터 초기화 및 생성 ---
     function initializeQuizData() {
+        // 기존 문제 데이터 분류
         shortQuizData = sourceQuizData.filter(q => q.type === 'short');
         essayQuizData = sourceQuizData.filter(q => q.type === 'essay');
 
-        // 단답형 문제를 역산하여 서술형 문제로 변환 및 ID 부여 (ID는 오답 관리에 중요)
-        shortQuizData.forEach(q => {
+        // 단답형 문제를 역산하여 서술형 문제로 변환 및 ID 부여 
+        sourceQuizData.filter(q => q.type === 'short').forEach(q => {
             const reversedQ = `다음 과학기술/개념에 대해 서술하시오. (${q.a})`;
             const reversedA = q.q; 
+            // 단답형이었던 문제는 다시 서술형으로 만들어서 essayQuizData에 추가
             essayQuizData.push({
                 type: 'essay',
                 q: reversedQ,
                 a: reversedA,
-                id: `e-rev-${q.id.split('-')[1]}` // 역산 서술형은 고유 ID 부여
+                id: `e-rev-${q.id.split('-')[1]}` 
             });
         });
         
@@ -542,6 +564,31 @@
         finalScoreDiv.style.display = 'block';
     }
 
+    // --- 키보드 이벤트 핸들러 ---
+    document.addEventListener('keydown', function(event) {
+        if (document.getElementById('final-score').style.display === 'block') {
+            return;
+        }
+
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            // 현재 포커스된 요소가 서술형 버튼이면 아무것도 하지 않음 (자가 채점 방해 방지)
+            if (document.activeElement.classList.contains('essay-score-btn')) {
+                return;
+            }
+
+            if (!isAnswerChecked) {
+                handleCheck();
+            } else {
+                nextQuestion();
+            }
+        } else if (event.key === ' ' && isAnswerChecked) {
+            event.preventDefault(); 
+            nextQuestion();
+        }
+    });
+
     // --- 퀴즈 시작 ---
     function startGame() {
         initializeQuizData(); // 데이터 초기화 및 서술형 문제 생성
@@ -555,26 +602,6 @@
         
         document.getElementById('control-panel').style.display = 'block';
     }
-
-    // --- 키보드 이벤트 핸들러 ---
-    document.addEventListener('keydown', function(event) {
-        if (document.getElementById('final-score').style.display === 'block') {
-            return;
-        }
-
-        if (event.key === 'Enter') {
-            event.preventDefault();
-
-            if (!isAnswerChecked) {
-                handleCheck();
-            } else {
-                nextQuestion();
-            }
-        } else if (event.key === ' ' && isAnswerChecked) {
-            event.preventDefault(); 
-            nextQuestion();
-        }
-    });
 
     window.onload = startGame;
 </script>
