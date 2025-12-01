@@ -160,7 +160,8 @@
         </div>
     </div>
     
-    <div id="control-panel" style="margin-top: 20px;">
+    <div id="control-panel" style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">
+        <button class="quiz-button" onclick="startGame()" style="background-color: #4CAF50; color: #1a1a1a;">문제 섞기 (재시작)</button>
         <button class="quiz-button" onclick="resetIncorrectAnswers()" style="background-color: #ff6347; color: #1a1a1a;">오답 노트 전체 초기화</button>
     </div>
 
@@ -257,6 +258,7 @@
         essayQuizData = sourceQuizData.filter(q => q.type === 'essay');
 
         // 초기 셔플
+        // 기존 배열을 복사하여 섞습니다.
         quizState.short.shuffled = shuffleArray([...shortQuizData]);
         quizState.essay.shuffled = shuffleArray([...essayQuizData]);
 
@@ -297,7 +299,8 @@
 
     // --- 탭 모드 변경 ---
     function setMode(mode) {
-        if (currentMode === mode) return;
+        // 현재 모드와 같으면 함수 실행 중지 (탭 버튼을 눌러도 불필요한 새로고침 방지)
+        if (currentMode === mode) return; 
 
         currentMode = mode;
         
@@ -315,7 +318,7 @@
         loadQuestion();
         document.getElementById('final-score').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('control-panel').style.display = 'block';
+        document.getElementById('control-panel').style.display = 'flex'; // display: flex로 통일
     }
     
     // 오답 노트 모드 설정
@@ -343,7 +346,7 @@
 
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('final-score').style.display = 'none';
-        document.getElementById('control-panel').style.display = 'block';
+        document.getElementById('control-panel').style.display = 'flex';
         loadQuestion();
     }
 
@@ -391,7 +394,7 @@
             input.disabled = false;
         });
 
-        // --- 입력 필드 표시/숨김 로직 (수정된 부분) ---
+        // --- 입력 필드 표시/숨김 로직 ---
         const isShortQuestion = currentQuestion.type === 'short';
         const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req; 
 
@@ -422,9 +425,7 @@
         if (essayButtons) essayButtons.style.display = 'block';
         isAnswerChecked = false;
         
-        // **********************************************
         // 다음 문제 로드 시 입력 필드에 바로 포커스
-        // **********************************************
         setTimeout(() => {
             let inputField;
             if (isMultiAnswerShort) {
@@ -639,7 +640,8 @@
             
             // 현재 모드가 'review'였다면 다시 로드
             if (currentMode === 'review') {
-                setMode('short'); // 초기화 후 단답형 모드로 이동
+                // setMode를 사용하여 탭을 단답형으로 변경하고 로드
+                setMode('short'); 
             }
         }
     }
@@ -670,6 +672,33 @@
         document.getElementById('quiz-area').style.display = 'none';
         document.getElementById('control-panel').style.display = 'none';
         finalScoreDiv.style.display = 'block';
+    }
+
+    // --- 퀴즈 시작 (문제 섞기) 기능 개선 ---
+    function startGame() {
+        initializeQuizData(); // 단답형, 서술형 문제 배열을 새로 섞음
+        
+        // 상태 초기화
+        quizState.short.index = 0; quizState.short.score = 0;
+        quizState.essay.index = 0; quizState.essay.score = 0;
+        quizState.review.index = 0; quizState.review.score = 0;
+        
+        // 재시작 시 현재 탭(short 또는 essay)을 유지하고, review/종료 상태였다면 short로 초기화
+        let modeToStart = currentMode;
+        if (currentMode === 'review' || document.getElementById('final-score').style.display === 'block') {
+            modeToStart = 'short';
+        }
+        
+        // UI 초기화 및 탭 스타일 강제 적용
+        document.getElementById('final-score').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'block';
+        document.getElementById('control-panel').style.display = 'flex'; // 버튼 컨테이너 표시
+
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`${modeToStart}-tab-btn`).classList.add('active');
+        
+        currentMode = modeToStart; // 모드 설정
+        loadQuestion(); // 새로 섞인 문제의 1번을 로드
     }
 
     // --- 키보드 이벤트 핸들러 ---
@@ -707,20 +736,6 @@
             nextQuestion();
         }
     });
-
-    // --- 퀴즈 시작 ---
-    function startGame() {
-        initializeQuizData(); // 데이터 초기화 
-        // 상태 초기화
-        quizState.short.index = 0; quizState.short.score = 0;
-        quizState.essay.index = 0; quizState.essay.score = 0;
-        quizState.review.index = 0; quizState.review.score = 0;
-        
-        // 기본 모드인 'short'로 설정
-        setMode('short');
-        
-        document.getElementById('control-panel').style.display = 'block';
-    }
 
     window.onload = startGame;
 </script>
