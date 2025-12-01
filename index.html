@@ -33,7 +33,7 @@
         }
         /* 탭 버튼 스타일 */
         .tab-buttons {
-            display: flex;
+            display: flex; /* 탭 버튼이 항상 보이도록 명시적으로 설정 */
             justify-content: center;
             margin-bottom: 30px;
         }
@@ -114,7 +114,7 @@
 <div class="container">
     <h1>지구과학 단답형/서술형 문제</h1>
 
-    <div class="tab-buttons" id="tab-container">
+    <div class="tab-buttons" id="tab-container" style="display: flex;">
         <button class="tab-btn active" id="short-tab-btn" onclick="setMode('short')">단답형 퀴즈</button>
         <button class="tab-btn" id="essay-tab-btn" onclick="setMode('essay')">서술형 퀴즈</button>
         <button class="tab-btn" id="review-tab-btn" onclick="setMode('review')">오답 노트 (0)</button>
@@ -271,15 +271,14 @@
         shortQuizData = sourceQuizData.filter(q => q.type === 'short');
         essayQuizData = sourceQuizData.filter(q => q.type === 'essay');
 
-        // 초기 셔플
-        // 기존 배열을 복사하여 섞습니다.
+        // 초기 셔플: 배열 복사본을 섞어서 사용하므로 중복 출제되지 않습니다.
         quizState.short.shuffled = shuffleArray([...shortQuizData]);
         quizState.essay.shuffled = shuffleArray([...essayQuizData]);
 
         updateReviewCount();
     }
 
-    // Fisher-Yates 셔플 알고리즘
+    // Fisher-Yates 셔플 알고리즘 (중복 없는 섞기)
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -351,7 +350,7 @@
             return;
         }
 
-        // 오답 문제를 모아서 섞음
+        // 오답 문제를 모아서 섞음 (오답 노트는 중복 학습을 위해 의도적으로 문제를 반복할 수 있음)
         const combinedIncorrect = [...shortIncorrect, ...essayIncorrect];
         reviewShuffled = shuffleArray(combinedIncorrect);
         
@@ -704,7 +703,7 @@
         }
         
         // UI 초기화 및 탭 스타일 강제 적용
-        document.getElementById('tab-container').style.display = 'flex'; // 탭 컨테이너 강제 표시 (추가된 수정)
+        document.getElementById('tab-container').style.display = 'flex'; // 탭 컨테이너 강제 표시
         document.getElementById('final-score').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
         document.getElementById('control-panel').style.display = 'flex'; // 버튼 컨테이너 표시
