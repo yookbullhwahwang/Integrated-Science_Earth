@@ -92,9 +92,24 @@
         /* 서술형 입력 필드 */
         .essay-input-container { width: 90%; margin: 10px auto; }
         .essay-input-container textarea { width: 100%; height: 100px; padding: 10px; font-size: 1em; border: 2px solid #555; border-radius: 8px; background-color: #444; color: #e0e0e0; resize: vertical; outline: none; box-sizing: border-box; }
-        #essay-answer-box { background-color: #444; border: 1px solid #666; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; display: none; }
-        #essay-answer-box h4 { color: #8ab4f8; margin-top: 0; }
+        
+        /* 채점 박스 공통 스타일 */
+        #essay-answer-box, #master-essay-answer-box { background-color: #444; border: 1px solid #666; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; display: none; }
+        #essay-answer-box h4, #master-essay-answer-box h4 { color: #8ab4f8; margin-top: 0; }
         #essay-score-buttons { margin-top: 10px; text-align: center; }
+        
+        /* 마스터 서술형 결과 스타일 */
+        #master-essay-criteria-list div {
+            padding: 8px;
+            margin-bottom: 5px;
+            border-bottom: 1px dotted #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .master-score-text { font-size: 1.0em; flex-grow: 1; }
+        .master-score-text.achieved { color: #85e085; font-weight: bold; }
+
         .button-group { display: flex; justify-content: center; gap: 15px; }
         .quiz-button { padding: 12px 25px; font-size: 1.1em; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s, transform 0.1s; }
         #check-button { background-color: #a8a8a8; color: #1a1a1a; }
@@ -105,6 +120,7 @@
         .result { margin-top: 15px; font-size: 1.2em; font-weight: bold; min-height: 30px; }
         .correct { color: #85e085; }
         .incorrect { color: #ff8a80; }
+        .partial-correct { color: #ffeb3b; } /* 부분 정답 색상 */
         #final-score { margin-top: 40px; padding: 20px; border: 2px solid #8ab4f8; border-radius: 10px; font-size: 1.3em; }
         .quiz-button:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
@@ -117,6 +133,7 @@
     <div class="tab-buttons" id="tab-container" style="display: flex;">
         <button class="tab-btn active" id="short-tab-btn" onclick="setMode('short')">단답형 퀴즈</button>
         <button class="tab-btn" id="essay-tab-btn" onclick="setMode('essay')">서술형 퀴즈</button>
+        <button class="tab-btn" id="master_essay-tab-btn" onclick="setMode('master_essay')">마스터 서술형</button>
         <button class="tab-btn" id="review-tab-btn" onclick="setMode('review')">오답 노트 (0)</button>
     </div>
 
@@ -135,6 +152,7 @@
 
                 <div class="essay-input-container" id="essay-input-area" style="display: none;">
                     <textarea id="essay-user-answer" placeholder="답안을 서술하세요."></textarea>
+                    
                     <div id="essay-answer-box">
                         <h4>모범 답안</h4>
                         <pre id="essay-correct-answer" style="white-space: pre-wrap; font-family: inherit;"></pre>
@@ -142,6 +160,17 @@
                             <p>위의 모범 답안과 비교하여 채점해주세요.</p>
                             <button class="quiz-button essay-score-btn correct-btn" onclick="setEssayResult(true)">O (맞음)</button>
                             <button class="quiz-button essay-score-btn incorrect-btn" onclick="setEssayResult(false)">X (틀림)</button>
+                        </div>
+                    </div>
+                    
+                    <div id="master-essay-answer-box">
+                        <h4>모범 답안</h4>
+                        <pre id="master-essay-correct-answer" style="white-space: pre-wrap; font-family: inherit;"></pre>
+                        <div id="master-essay-score-container" style="margin-top: 15px;">
+                            <h4>자동 채점 기준 적용 결과 (총 <span id="max-master-score">0</span>점)</h4>
+                            <div id="master-essay-criteria-list">
+                                </div>
+                            <p style="margin-top: 10px; font-weight: bold; color: #8ab4f8;">최종 획득 점수: <span id="current-master-score">0</span>점</p>
                         </div>
                     </div>
                 </div>
@@ -165,7 +194,7 @@
 </div>
 
 <script>
-    // --- 원본 퀴즈 데이터 정의 (제공된 CSV 파일 기반으로 업데이트됨) ---
+    // --- 원본 퀴즈 데이터 정의 ---
     const sourceQuizData = [
         // --- 단답형 문제 (단일 정답, 35개) ---
         { type: "short", q: "기존 전력망에 정보통신기술을 접목해 전력 생산, 송전, 배전, 소비 전 과정을 실시간으로 모니터링하고 제어하는 차세대 전력망은?", a: "스마트그리드", id: "s-1" },
@@ -179,7 +208,7 @@
         { type: "short", q: "실시간 교통 정보를 분석, 조정하여 교통혼잡을 감소시키는 사물 인터넷 활용 예는?", a: "스마트교통시스템", id: "s-9" },
         { type: "short", q: "환자의 데이터를 실시간으로 수집, 분석하여 효율적인 진료를 제공하는 사물 인터넷 활용 예는?", a: "스마트병원", id: "s-10" },
         { type: "short", q: "생산 공정의 자동화로 생산성을 향상하고, 비용을 절감하며, 품질 관리를 강화하는 사물 인터넷 활용 예는?", a: "스마트공장", id: "s-11" },
-        { type: "short", q: "토양 수분, 기후 조건, 작물 성장 상태를 모니터링하여 농작물 생산성 향상시키는 사물 인터넷 활용 예는?", a: ["스마트농업", "스마트농장"], num_req: 1, id: "s-12" },
+        { type: "short", q: "토양 수분, 기후 조건, 작물 성장 상태를 모니터링하여 농작물 생산성 향상시키는 사물 인터넷 활용 예는?", a: "스마트농업", id: "s-12" },
         { type: "short", q: "과학기술의 발전으로 나타나 다양한 사회 구성원들에게 논란을 일으키는 문제를 무엇이라고 하며, 약자는?", a: "과학관련사회적쟁점(SSI)", id: "s-14" },
         { type: "short", q: "'Not In My Back Yard'의 약자로, 혐오 시설 등이 자신의 거주 지역에 들어오는 것을 반대하는 현상은?", a: "NIMBY", id: "s-15" },
         { type: "short", q: "'Please In My Front Yard'의 약자로, 이익이 되는 시설을 자기 거주 지역에 유치하려는 현상은?", a: "PIMFY", id: "s-16" },
@@ -219,7 +248,7 @@
         { type: "short", q: "의학 기술의 예를 적어도 3가지 순서 상관없이 서술하시오.", a: ["MRI", "CT", "초음파", "첨단영상진단기술", "정밀의학", "재생의학"], num_req: 3, id: "s-case-13" },
         { type: "short", q: "사물 인터넷 기술의 활용 예시를 적어도 3가지 이상 순서 상관없이 서술하시오.", a: ["홈자동화", "스마트교통시스템", "스마트병원", "스마트공장", "스마트농장", "스마트농업", "스마트팜"], num_req: 3, id: "s-case-14" },
         
-        // --- 서술형 문제 (18개) ---
+        // --- 서술형 문제 (기존 18개) ---
         { type: "essay", q: "인공지능 로봇의 활용에서 공장에서의 활용 예를 서술하시오.", a: "공장에서 반복적이고 위험한 작업을 수행합니다.\n이를 통해 생산 효율성이 향상되고, 위험한 일에 실시간으로 적절하게 대처할 수 있습니다.", id: "e-1" },
         { type: "essay", q: "인공지능 로봇의 정의는 무엇인가?", a: "인공지능 기술을 활용해 상황을 스스로 판단하며 자율적으로 움직이는 로봇을 말한다.", id: "e-1-1" },
         { type: "essay", q: "인공지능 로봇의 활용에서 물류에서의 활용 예를 서술하시오.", a: "창고 관리, 상품 분류, 배송 등 물류 작업을 자동화하여 효율성을 향상한다.", id: "e-1-2" },
@@ -243,19 +272,54 @@
         { type: "essay", q: "매체 기술 발전의 한계를 4가지 서술하시오.", a: "가짜 뉴스, 사회적 고립, 문화 상업화, 세대 간 정보 격차 발생.", id: "e-18" }
     ];
 
+    // --- 마스터 서술형 문제 데이터 (새로 추가됨) ---
+    // criteria의 text 필드가 이제 자동 채점을 위한 "키워드" 역할을 합니다.
+    const masterEssayQuizData = [
+        { type: "master_essay", q: "교통 기술이 무엇인지 서술하시오.", a: "멀리 떨어진 곳까지 빠르게 이동시켜주는 기술이다.", id: "me-1", 
+          criteria: [ {text: "시켜주는 기술이다.", score: 10}, {text: "멀리 떨어진 곳까지 빠르게 이동", score: 90} ] },
+        { type: "master_essay", q: "정보 통신 기술이 무엇인지 서술하시오.", a: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능하게 해주는 기술이다.", id: "me-2", 
+          criteria: [ {text: "가능하게 해주는 기술이다.", score: 10}, {text: "시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통", score: 90} ] },
+        { type: "master_essay", q: "신재생에너지 기술이 무엇인지 서술하시오.", a: "지속 가능한 발전과 지구 환경 문제 해결과 도움을 주는 기술이다.", id: "me-3", 
+          criteria: [ {text: "도움을 주는 기술이다.", score: 10}, {text: "지속 가능한 발전과 지구 환경 문제 해결", score: 90} ] },
+        { type: "master_essay", q: "농업 기술이 무엇인지 서술하시오.", a: "식량 문제를 해결하는 기술이다.", id: "me-4", 
+          criteria: [ {text: "해결하는 기술이다.", score: 10}, {text: "식량 문제를", score: 90} ] },
+        { type: "master_essay", q: "의학 기술이 무엇인지 서술하시오.", a: "인간의 질병에서 벗어나 건강한 삶을 유지하게 해주는 기술이다.", id: "me-5", 
+          criteria: [ {text: "유지하게 해주는 기술이다.", score: 10}, {text: "인간의 질병에서 벗어나 건강한 삶", score: 90} ] },
+        { type: "master_essay", q: "인공지능 로봇이 무엇인지 서술하시오.", a: "인공지능 기술을 활용해 상황을 스스로 판단하며 자율적으로 움직이는 로봇이며, 센서와 정보를 주고받으며 학습하는 로봇이다.", id: "me-6", 
+          criteria: [ {text: "움직이는 로봇이며", score: 10}, {text: "인공지능 기술을 활용해 상황을 스스로 판단하며 자율적으로", score: 90} ] },
+        { type: "master_essay", q: "사물 인터넷 기술이 무엇인지 서술하고, 약자를 서술하시오.", a: "사물 인터넷의 약자는 Internet of Things이며, 사물에 센서와 통신 기술을 내장하고 인터넷에 연결하여 정보를 전송하고 통신하는 기술이다.", id: "me-7", 
+          criteria: [ {text: "Internet of Things이며", score: 10}, {text: "사물에 센서와 통신 기술을 내장하고 인터넷에 연결하여 정보를 전송하고 통신", score: 90} ] },
+        { type: "master_essay", q: "스마트팜에서 사물 인터넷 기술이 어떻게 적용되는지 서술하시오.", a: "토양 센서를 이용하여 수분량, pH 농도, 온도 등을 측정하고, 기상 센서는 온도, 습도, 일사량, 강우 등을 모니터링함.\n자동 관개 시스템을 이용하여 필요한 양의 수분을 공급하고, 작물의 영양 상태를 모니터링하고 필요한 비료와 영양소를 공급함.", id: "me-8", 
+          criteria: [ {text: "토양 센서를 이용하여", score: 50}, {text: "자동 관개 시스템을 이용하여", score: 50} ] },
+        { type: "master_essay", q: "연구 윤리 중 정직성과 개방성에 대해 서술하시오.", a: "연구 절차와 결과를 조작하거나 거짓으로 만들어 내지 않는다. 또 학문 발전을 위해 연구 내용을 공개한다.", id: "me-9", 
+          criteria: [ {text: "조작하거나 거짓으로 만들어 내지 않는다", score: 50}, {text: "연구 내용을 공개한다", score: 50} ] },
+        { type: "master_essay", q: "연구 윤리 중 지식 재산권 존중에 대해 서술하시오.", a: "다른 과학자의 연구 결과를 함부로 사용하지 않는다.", id: "me-10", 
+          criteria: [ {text: "다른 과학자의 연구 결과를", score: 50}, {text: "함부로 사용하지 않는다", score: 50} ] },
+        { type: "master_essay", q: "연구 윤리 중 상호 존중에 대해 서술하시오.", a: "함께 연구하는 동료들을 존중하고, 연구 참여자들의 성과를 공정하게 나눈다.", id: "me-11", 
+          criteria: [ {text: "함께 연구하는 동료들을 존중", score: 50}, {text: "성과를 공정하게 나눈다", score: 50} ] },
+        { type: "master_essay", q: "연구 윤리 중 실험 대상에 대한 존중에 대해 서술하시오.", a: "실험 대상을 윤리적으로 대하여 실험 대상의 생명과 존엄성을 존중한다.", id: "me-12", 
+          criteria: [ {text: "실험 대상을 윤리적으로 대하여", score: 50}, {text: "생명과 존엄성을 존중한다", score: 50} ] },
+        { type: "master_essay", q: "연구 윤리 중 사회적 책임에 대해 서술하시오.", a: "사회에 악영향을 미치는 연구는 피하고, 공공의 이익을 위해 노력한다.", id: "me-13", 
+          criteria: [ {text: "사회에 악영향을 미치는 연구는 피하고", score: 50}, {text: "공공의 이익을 위해 노력한다", score: 50} ] }
+    ];
+    // --- 마스터 서술형 문제 데이터 끝 ---
+
     let shortQuizData = [];
     let essayQuizData = [];
+    let masterEssayQuizDataShuffled = []; // 마스터 서술형 셔플 목록
 
     // --- 오답 노트 상태 관리 ---
     let shortIncorrect = []; 
     let essayIncorrect = [];
+    let masterEssayIncorrect = []; // 마스터 서술형 오답 목록
     let reviewShuffled = [];
 
     // --- 퀴즈 상태 관리 ---
-    let currentMode = 'short'; // 현재 모드: 'short', 'essay', 'review'
+    let currentMode = 'short'; // 현재 모드: 'short', 'essay', 'master_essay', 'review'
     const quizState = {
         short: { index: 0, score: 0, shuffled: [] },
         essay: { index: 0, score: 0, shuffled: [] },
+        master_essay: { index: 0, score: 0, shuffled: [] }, // 새로운 상태 추가
         review: { index: 0, score: 0, total: 0 }
     };
 
@@ -270,6 +334,7 @@
         // 초기 셔플: 배열 복사본을 섞어서 사용하므로 중복 출제되지 않습니다.
         quizState.short.shuffled = shuffleArray([...shortQuizData]);
         quizState.essay.shuffled = shuffleArray([...essayQuizData]);
+        quizState.master_essay.shuffled = shuffleArray([...masterEssayQuizData]); // 마스터 서술형 셔플
 
         updateReviewCount();
     }
@@ -285,14 +350,17 @@
 
     // 오답 노트 탭의 문제 개수 업데이트
     function updateReviewCount() {
-        const totalIncorrect = shortIncorrect.length + essayIncorrect.length;
+        const totalIncorrect = shortIncorrect.length + essayIncorrect.length + masterEssayIncorrect.length; // 마스터 서술형 포함
         document.getElementById('review-tab-btn').textContent = `오답 노트 (${totalIncorrect})`;
         quizState.review.total = totalIncorrect;
     }
 
     // 오답 노트 배열에 문제가 이미 있는지 확인
     function isAlreadyIncorrect(question) {
-        const incorrectArray = question.type === 'short' ? shortIncorrect : essayIncorrect;
+        const incorrectArray = 
+            question.type === 'short' ? shortIncorrect : 
+            question.type === 'essay' ? essayIncorrect : 
+            masterEssayIncorrect;
         return incorrectArray.some(q => q.id === question.id);
     }
 
@@ -300,15 +368,17 @@
     function removeIncorrect(question) {
         if (question.type === 'short') {
             shortIncorrect = shortIncorrect.filter(q => q.id !== question.id);
-        } else {
+        } else if (question.type === 'essay') {
             essayIncorrect = essayIncorrect.filter(q => q.id !== question.id);
+        } else if (question.type === 'master_essay') {
+             masterEssayIncorrect = masterEssayIncorrect.filter(q => q.id !== question.id);
         }
         updateReviewCount();
     }
 
     // --- 탭 모드 변경 ---
     function setMode(mode) {
-        // 현재 모드와 같으면 함수 실행 중지 (탭 버튼을 눌러도 불필요한 새로고침 방지)
+        // 현재 모드와 같으면 함수 실행 중지
         if (currentMode === mode) return; 
 
         currentMode = mode;
@@ -327,7 +397,7 @@
         loadQuestion();
         document.getElementById('final-score').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('control-panel').style.display = 'flex'; // display: flex로 통일
+        document.getElementById('control-panel').style.display = 'flex';
     }
     
     // 오답 노트 모드 설정
@@ -346,8 +416,8 @@
             return;
         }
 
-        // 오답 문제를 모아서 섞음 (오답 노트는 중복 학습을 위해 의도적으로 문제를 반복할 수 있음)
-        const combinedIncorrect = [...shortIncorrect, ...essayIncorrect];
+        // 오답 문제를 모아서 섞음
+        const combinedIncorrect = [...shortIncorrect, ...essayIncorrect, ...masterEssayIncorrect];
         reviewShuffled = shuffleArray(combinedIncorrect);
         
         quizState.review.index = 0; 
@@ -364,28 +434,44 @@
         const state = quizState[currentMode];
         let currentQuestion, totalQuestions;
 
+        // 현재 모드에 따라 문제 배열 설정
+        let quizArray;
+        let typeDisplayName;
+        if (currentMode === 'short') {
+            quizArray = state.shuffled;
+            typeDisplayName = '단답형';
+        } else if (currentMode === 'essay') {
+            quizArray = state.shuffled;
+            typeDisplayName = '서술형';
+        } else if (currentMode === 'master_essay') {
+            quizArray = state.shuffled;
+            typeDisplayName = '마스터 서술형';
+        } else if (currentMode === 'review') {
+            quizArray = reviewShuffled;
+        }
+
+        // 문제 종료 확인
+        totalQuestions = quizArray.length;
+        if (state.index >= totalQuestions) {
+            showFinalScore();
+            return;
+        }
+        currentQuestion = quizArray[state.index];
+
+        // 상태 표시 업데이트
         if (currentMode === 'review') {
-            totalQuestions = reviewShuffled.length;
-            if (state.index >= totalQuestions) {
-                showFinalScore();
-                return;
-            }
-            currentQuestion = reviewShuffled[state.index];
+            const reviewType = currentQuestion.type === 'short' ? '단답형' : (currentQuestion.type === 'essay' ? '서술형' : '마스터 서술형');
             document.getElementById('quiz-status').textContent = 
-                `오답 노트 문제 ${state.index + 1} / ${totalQuestions} (맞춘 개수: ${state.score}개)`;
+                `오답 노트 문제 ${state.index + 1} / ${totalQuestions} (${reviewType}, 맞춘 개수: ${state.score}개)`;
         } else {
-            totalQuestions = state.shuffled.length;
-            if (state.index >= totalQuestions) {
-                showFinalScore();
-                return;
-            }
-            currentQuestion = state.shuffled[state.index];
+            // 마스터 서술형은 총 획득 점수를 표시
+            const scoreUnit = currentMode === 'master_essay' ? '점' : '개';
             document.getElementById('quiz-status').textContent = 
-                `${currentMode === 'short' ? '단답형' : '서술형'} 문제 ${state.index + 1} / ${totalQuestions} (현재 점수: ${state.score}점)`;
+                `${typeDisplayName} 문제 ${state.index + 1} / ${totalQuestions} (현재 점수: ${state.score}${scoreUnit})`;
         }
         
         // 문제 내용 업데이트
-        const qType = currentQuestion.type === 'short' ? '단답형' : '서술형';
+        const qType = currentQuestion.type === 'short' ? '단답형' : (currentQuestion.type === 'essay' ? '서술형' : '마스터 서술형');
         document.getElementById('question-text').textContent = 
             `[${qType}] ${currentQuestion.q}`;
         
@@ -395,9 +481,12 @@
         document.getElementById('answer-input').value = '';
         document.getElementById('essay-user-answer').value = '';
         document.getElementById('essay-answer-box').style.display = 'none';
+        document.getElementById('master-essay-answer-box').style.display = 'none'; // 마스터 서술형 박스 숨김
+
 
         // --- 입력 필드 표시/숨김 및 동적 생성 로직 ---
         const isShortQuestion = currentQuestion.type === 'short';
+        const isMasterEssay = currentQuestion.type === 'master_essay';
         // num_req가 있고, 답변이 배열인 경우 다중 정답으로 간주
         const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req && Array.isArray(currentQuestion.a); 
 
@@ -410,7 +499,6 @@
         multiContainer.style.display = 'none';
         essayArea.style.display = 'none';
         
-        // 이전에 동적으로 생성된 입력 필드 제거
         multiContainer.querySelectorAll('.multi-answer-input').forEach(input => input.remove());
 
         // 2. 문제 유형에 따라 적절한 필드 표시 및 동적 생성
@@ -424,7 +512,7 @@
             for (let i = 0; i < requiredCount; i++) {
                 const input = document.createElement('input');
                 input.type = 'text';
-                input.className = 'multi-answer-input'; // 클래스 유지
+                input.className = 'multi-answer-input'; 
                 input.placeholder = `답변 ${i + 1}`;
                 multiContainer.appendChild(input);
             }
@@ -432,8 +520,9 @@
         } else if (isShortQuestion) { // 단일 답 단답형
             singleInput.style.display = 'block';
             singleInput.disabled = false;
-        } else { // 서술형
+        } else { // 서술형 (essay 또는 master_essay)
             essayArea.style.display = 'block';
+            document.getElementById('essay-user-answer').disabled = false;
         }
         // --- 입력 필드 표시/숨김 및 동적 생성 로직 끝 ---
 
@@ -442,21 +531,20 @@
         document.getElementById('check-button').style.display = 'inline-block';
         document.getElementById('check-button').disabled = false;
         document.getElementById('next-button').style.display = 'none';
-        // singleInput disabled 상태는 위에서 이미 처리됨
-        document.getElementById('essay-user-answer').disabled = false;
+        
         const essayButtons = document.getElementById('essay-score-buttons');
         if (essayButtons) essayButtons.style.display = 'block';
+        
         isAnswerChecked = false;
         
         // 다음 문제 로드 시 입력 필드에 바로 포커스
         setTimeout(() => {
             let inputField;
             if (isMultiAnswerShort) {
-                 // 동적으로 생성된 첫 번째 필드를 선택
                  inputField = multiContainer.querySelector('.multi-answer-input'); 
             } else if (isShortQuestion) {
                  inputField = document.getElementById('answer-input');
-            } else { // essay
+            } else { // essay or master_essay
                  inputField = document.getElementById('essay-user-answer');
             }
             
@@ -481,12 +569,14 @@
 
         if (currentQuestion.type === 'short') {
             checkShortAnswer(currentQuestion);
-        } else { // essay
+        } else if (currentQuestion.type === 'essay') { 
             showEssayAnswer(currentQuestion);
+        } else if (currentQuestion.type === 'master_essay') {
+            checkMasterEssayAnswer(currentQuestion); // 마스터 서술형 자동 채점 호출
         }
     }
 
-    // 단답형 자동 채점 (단일 정답 및 다중 정답 모두 처리)
+    // 단답형 자동 채점 (기존 로직 유지)
     function checkShortAnswer(currentQuestion) {
         const state = quizState[currentMode];
         const resultText = document.getElementById('result-text');
@@ -499,7 +589,6 @@
 
         if (isMultiAnswer) {
             // --- 다중 정답 처리 로직 ---
-            // 동적으로 생성된 입력 필드만 선택
             const multiInputs = document.querySelectorAll('#multi-answer-input-container .multi-answer-input');
             const userAnswers = [];
             const requiredCount = currentQuestion.num_req;
@@ -509,29 +598,24 @@
                 if (normalized) {
                     userAnswers.push(normalized);
                 }
-                input.disabled = true; // 입력 필드 비활성화
+                input.disabled = true;
             });
 
-            // 정답 리스트 (공백 제거 및 소문자화)
             const allCorrectAnswersNormalized = currentQuestion.a.map(a => String(a).replace(/\s/g, '').toLowerCase());
             allCorrectAnswersDisplay = currentQuestion.a.join(', ');
 
-            // 순서 무관 정답 개수 계산
             let correctCount = 0;
             const matchedInputs = [];
             
             userAnswers.forEach(userA => {
-                // 입력된 답이 정답 목록에 있고, 아직 매칭되지 않은 경우
                 if (allCorrectAnswersNormalized.includes(userA) && !matchedInputs.includes(userA)) {
                     correctCount++;
-                    matchedInputs.push(userA); // 중복 답안 방지
+                    matchedInputs.push(userA);
                 }
             });
 
-            // 요구 개수 충족 여부로 최종 정답 판별
             isCorrect = (correctCount >= requiredCount);
             
-            // 피드백 메시지 생성
             feedbackMessage = `${currentQuestion.a.length}개의 정답 후보 중 **${correctCount}개** 정답`;
             if (requiredCount > 0) {
                  feedbackMessage += ` (요구 개수: ${requiredCount}개)`;
@@ -541,12 +625,11 @@
             }
 
         } else {
-            // --- 단일 정답 처리 로직 (기존 로직 유지) ---
+            // --- 단일 정답 처리 로직 ---
             const userAnswer = document.getElementById('answer-input').value.replace(/\s/g, '').toLowerCase();
             
             let correctAnswer;
             if (Array.isArray(currentQuestion.a)) {
-                // s-5 같은 문제가 Array이긴 하지만 num_req가 1인 경우
                 const normalizedAnswers = currentQuestion.a.map(a => String(a).replace(/\s/g, '').toLowerCase());
                 isCorrect = normalizedAnswers.includes(userAnswer);
                 allCorrectAnswersDisplay = currentQuestion.a.join(', ');
@@ -570,29 +653,29 @@
         } else {
             resultText.innerHTML = isMultiAnswer ? `**오답입니다!** <br/> ${feedbackMessage}` : feedbackMessage;
             resultText.classList.add('incorrect');
-            // 오답 노트에 추가 (메인 퀴즈 모드일 때만)
             if (currentMode !== 'review' && !isAlreadyIncorrect(currentQuestion)) {
                 shortIncorrect.push(currentQuestion);
                 updateReviewCount();
             }
         }
         
-        // 오답 노트 모드에서 정답을 맞췄으면 오답 리스트에서 제거
         if (currentMode === 'review' && isCorrect) {
             removeIncorrect(currentQuestion);
-            state.score++; // 오답 노트에서 맞춘 개수 증가
+            state.score++;
         }
 
         transitionToNextState(true);
     }
 
-    // 서술형 모범 답안 표시 (자가 채점 시작)
+    // 서술형 모범 답안 표시 (자가 채점 시작) - 기존 서술형
     function showEssayAnswer(currentQuestion) {
         document.getElementById('essay-user-answer').disabled = true;
         
         const answerBox = document.getElementById('essay-answer-box');
-        document.getElementById('essay-correct-answer').textContent = currentQuestion.a;
         answerBox.style.display = 'block';
+        document.getElementById('master-essay-answer-box').style.display = 'none'; // 마스터 서술형 숨김
+
+        document.getElementById('essay-correct-answer').textContent = currentQuestion.a;
 
         const resultText = document.getElementById('result-text');
         resultText.textContent = '모범 답안과 비교 후 정답 여부를 선택해주세요.';
@@ -601,12 +684,94 @@
         document.getElementById('check-button').disabled = true;
     }
 
-    // 서술형 자가 채점 결과 반영
+    // 마스터 서술형 자동 채점 및 결과 표시 - 새로 수정된 로직
+    function checkMasterEssayAnswer(currentQuestion) {
+        document.getElementById('essay-user-answer').disabled = true;
+        const userAnswer = document.getElementById('essay-user-answer').value.replace(/\s/g, '').toLowerCase();
+        
+        const masterAnswerBox = document.getElementById('master-essay-answer-box');
+        masterAnswerBox.style.display = 'block';
+        document.getElementById('essay-answer-box').style.display = 'none';
+
+        document.getElementById('master-essay-correct-answer').textContent = currentQuestion.a;
+        
+        const criteriaList = document.getElementById('master-essay-criteria-list');
+        criteriaList.innerHTML = '';
+        
+        let totalScore = 0;
+        let earnedScore = 0;
+
+        // 1. 채점 기준별 점수 계산
+        currentQuestion.criteria.forEach((criterion, index) => {
+            totalScore += criterion.score;
+            
+            // 키워드 정규화
+            const keyword = criterion.text.replace(/\s/g, '').toLowerCase();
+            
+            // 사용자의 답안에 키워드가 포함되어 있는지 확인
+            const isAchieved = userAnswer.includes(keyword);
+
+            if (isAchieved) {
+                earnedScore += criterion.score;
+            }
+
+            // UI 업데이트
+            const criteriaDiv = document.createElement('div');
+            criteriaDiv.id = `criteria-item-${index}`;
+            
+            let statusText = isAchieved ? `O (획득: ${criterion.score}점)` : `X (미획득: 0점)`;
+            criteriaDiv.innerHTML = `
+                <span class="master-score-text ${isAchieved ? 'achieved' : ''}">${criterion.score}점: ${criterion.text}</span>
+                <span style="font-weight: bold; color: ${isAchieved ? '#85e085' : '#ff8a80'};">${statusText}</span>
+            `;
+            criteriaList.appendChild(criteriaDiv);
+        });
+
+        document.getElementById('max-master-score').textContent = totalScore;
+        document.getElementById('current-master-score').textContent = earnedScore;
+
+        const resultText = document.getElementById('result-text');
+        const state = quizState[currentMode];
+        let isCorrect = (earnedScore === totalScore);
+        
+        // 2. 최종 결과 메시지 및 점수/오답 노트 처리
+        if (isCorrect) {
+            resultText.innerHTML = `**만점입니다!** (${earnedScore}/${totalScore}점) 🎉`;
+            resultText.className = 'result correct';
+            if (currentMode !== 'review') state.score += earnedScore;
+            if (currentMode === 'review') removeIncorrect(currentQuestion);
+
+        } else if (earnedScore > 0) {
+            resultText.innerHTML = `**부분 점수 획득!** (${earnedScore}/${totalScore}점)`;
+            resultText.className = 'result partial-correct';
+            if (currentMode !== 'review') state.score += earnedScore;
+            
+            // 부분 점수 획득 시 오답 노트 추가 (만점이 아니므로)
+            if (currentMode !== 'review' && !isAlreadyIncorrect(currentQuestion)) {
+                masterEssayIncorrect.push(currentQuestion);
+                updateReviewCount();
+            } else if (currentMode === 'review') {
+                // 오답 노트 모드에서 부분 점수를 획득해도 다음 풀이를 위해 남겨둘지 여부는 사용자 정책에 따름. (만점 아니면 남김)
+                state.score += earnedScore; // 오답 노트 모드에서는 획득 점수만큼 누적
+            }
+        } else {
+            resultText.innerHTML = `**오답입니다.** 획득 점수: (${earnedScore}/${totalScore}점) 😢`;
+            resultText.className = 'result incorrect';
+            
+            if (currentMode !== 'review' && !isAlreadyIncorrect(currentQuestion)) {
+                masterEssayIncorrect.push(currentQuestion);
+                updateReviewCount();
+            }
+        }
+        
+        transitionToNextState(true);
+    }
+
+    // 서술형 자가 채점 결과 반영 - 기존 서술형
     function setEssayResult(isCorrect) {
         const state = quizState[currentMode];
         const resultText = document.getElementById('result-text');
         
-        // 현재 문제 가져오기
         const currentQuestion = currentMode === 'review' 
             ? reviewShuffled[quizState.review.index] 
             : quizState[currentMode].shuffled[quizState[currentMode].index];
@@ -614,18 +779,17 @@
         if (isCorrect) {
             resultText.textContent = 'O (맞음)으로 채점되었습니다. 잘했어요!';
             resultText.classList.add('correct');
+            // 일반 서술형은 맞으면 1점 획득
             if (currentMode !== 'review') state.score++;
             
-            // 오답 노트 모드에서 정답을 맞췄으면 오답 리스트에서 제거
             if (currentMode === 'review') {
                 removeIncorrect(currentQuestion);
-                state.score++; // 오답 노트에서 맞춘 개수 증가
+                state.score++;
             }
         } else {
             resultText.textContent = 'X (틀림)으로 채점되었습니다. 정답을 확인하세요!';
             resultText.classList.add('incorrect');
             
-            // 오답 노트에 추가 (메인 퀴즈 모드일 때만)
             if (currentMode !== 'review' && !isAlreadyIncorrect(currentQuestion)) {
                 essayIncorrect.push(currentQuestion);
                 updateReviewCount();
@@ -634,17 +798,16 @@
 
         transitionToNextState(true);
     }
-
+    
     // 다음 문제 상태로 전환
     function transitionToNextState(focusNext = false) {
         isAnswerChecked = true;
         document.getElementById('check-button').style.display = 'none';
         document.getElementById('next-button').style.display = 'inline-block';
         
-        if (currentMode !== 'short') {
-            const essayButtons = document.getElementById('essay-score-buttons');
-            if (essayButtons) essayButtons.style.display = 'none';
-        }
+        // 기존 서술형의 자가 채점 버튼 숨김
+        const essayButtons = document.getElementById('essay-score-buttons');
+        if (essayButtons) essayButtons.style.display = 'none';
 
         if (focusNext) {
             document.getElementById('next-button').focus();
@@ -660,7 +823,7 @@
     
     // 오답 노트 초기화 기능
     function resetIncorrectAnswers() {
-        if (shortIncorrect.length === 0 && essayIncorrect.length === 0) {
+        if (shortIncorrect.length === 0 && essayIncorrect.length === 0 && masterEssayIncorrect.length === 0) {
             alert("오답 노트가 이미 비어있어!");
             return;
         }
@@ -668,13 +831,12 @@
         if (confirm("정말로 오답 노트에 저장된 모든 문제를 초기화할 거야?")) {
             shortIncorrect = [];
             essayIncorrect = [];
+            masterEssayIncorrect = [];
             reviewShuffled = [];
             updateReviewCount();
             alert("오답 노트가 깨끗하게 초기화되었어!");
             
-            // 현재 모드가 'review'였다면 다시 로드
             if (currentMode === 'review') {
-                // setMode를 사용하여 탭을 단답형으로 변경하고 로드
                 setMode('short'); 
             }
         }
@@ -685,16 +847,27 @@
         const finalScoreDiv = document.getElementById('final-score');
         const state = quizState[currentMode];
         const totalQuestions = currentMode === 'review' ? state.total : state.shuffled.length;
-        const quizType = currentMode === 'short' ? '단답형' : (currentMode === 'essay' ? '서술형' : '오답 노트');
+        const quizType = 
+            currentMode === 'short' ? '단답형' : 
+            (currentMode === 'essay' ? '서술형' : 
+            (currentMode === 'master_essay' ? '마스터 서술형' : '오답 노트'));
         
         let scoreText;
 
         if (currentMode === 'review') {
              const remaining = reviewShuffled.length - state.index;
-             scoreText = `총 ${totalQuestions} 문제 중 ${state.score} 문제를 맞췄고, 아직 ${remaining} 문제가 남아있어.`;
+             scoreText = `총 ${totalQuestions} 문제 중 ${state.score} 점을 획득했고, 아직 ${remaining} 문제가 남아있어. (점수는 단답형은 1점, 서술형/마스터 서술형은 획득 점수 기준)`;
         } else {
-             const percentage = ((state.score / totalQuestions) * 100).toFixed(1);
-             scoreText = `총 ${totalQuestions} 문제 중 <strong>${state.score}문제</strong> 정답! 정답률: <strong>${percentage}%</strong>`;
+             // 단답/서술형은 맞은 개수 기준, 마스터 서술형은 획득 점수 기준
+             const baseScore = currentMode === 'master_essay' ? state.score : state.score; 
+             const scoreUnit = currentMode === 'master_essay' ? '점' : '개';
+             const totalUnit = currentMode === 'master_essay' ? '총 획득 점수' : '맞춘 문제 개수';
+
+             scoreText = `${totalUnit}: <strong>${baseScore}${scoreUnit}</strong>`;
+             if (currentMode !== 'master_essay') {
+                 const percentage = ((state.score / totalQuestions) * 100).toFixed(1);
+                 scoreText = `총 ${totalQuestions} 문제 중 <strong>${state.score}${scoreUnit}</strong> 정답! 정답률: <strong>${percentage}%</strong>`;
+             }
         }
 
 
@@ -710,30 +883,29 @@
 
     // --- 퀴즈 시작 (문제 섞기) 기능 개선 ---
     function startGame() {
-        initializeQuizData(); // 단답형, 서술형 문제 배열을 새로 섞음
+        initializeQuizData(); // 모든 문제 배열을 새로 섞음
         
         // 상태 초기화
         quizState.short.index = 0; quizState.short.score = 0;
         quizState.essay.index = 0; quizState.essay.score = 0;
+        quizState.master_essay.index = 0; quizState.master_essay.score = 0; // 마스터 서술형 초기화
         quizState.review.index = 0; quizState.review.score = 0;
         
-        // 재시작 시 현재 탭(short 또는 essay)을 유지하고, review/종료 상태였다면 short로 초기화
         let modeToStart = currentMode;
         if (currentMode === 'review' || document.getElementById('final-score').style.display === 'block') {
             modeToStart = 'short';
         }
         
-        // UI 초기화 및 탭 스타일 강제 적용
-        document.getElementById('tab-container').style.display = 'flex'; // 탭 컨테이너 강제 표시
+        document.getElementById('tab-container').style.display = 'flex'; 
         document.getElementById('final-score').style.display = 'none';
         document.getElementById('quiz-area').style.display = 'block';
-        document.getElementById('control-panel').style.display = 'flex'; // 버튼 컨테이너 표시
+        document.getElementById('control-panel').style.display = 'flex'; 
 
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(`${modeToStart}-tab-btn`).classList.add('active');
         
-        currentMode = modeToStart; // 모드 설정
-        loadQuestion(); // 새로 섞인 문제의 1번을 로드
+        currentMode = modeToStart;
+        loadQuestion();
     }
 
     // --- 키보드 이벤트 핸들러 ---
@@ -752,7 +924,6 @@
             // 다중 입력 필드에서 빈 칸은 엔터로 다음 칸으로 넘어가게 허용
             if (document.activeElement.classList.contains('multi-answer-input')) {
                 const currentInput = document.activeElement;
-                // 다음 요소가 input이 맞는지 확인
                 let nextInput = currentInput.nextElementSibling;
                 while (nextInput && nextInput.tagName !== 'INPUT') {
                     nextInput = nextInput.nextElementSibling;
@@ -781,4 +952,3 @@
 
 </body>
 </html>
-
