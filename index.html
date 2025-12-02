@@ -131,11 +131,7 @@
                 
                 <div id="multi-answer-input-container" style="display: none;">
                     <p id="multi-answer-guide" style="font-size: 0.9em; margin-bottom: 15px; color: #ff8a80;"></p>
-                    <input type="text" class="multi-answer-input" placeholder="답변 1" />
-                    <input type="text" class="multi-answer-input" placeholder="답변 2" />
-                    <input type="text" class="multi-answer-input" placeholder="답변 3" />
-                    <input type="text" class="multi-answer-input" placeholder="답변 4" />
-                </div>
+                    </div>
 
                 <div class="essay-input-container" id="essay-input-area" style="display: none;">
                     <textarea id="essay-user-answer" placeholder="답안을 서술하세요."></textarea>
@@ -400,39 +396,53 @@
         document.getElementById('essay-user-answer').value = '';
         document.getElementById('essay-answer-box').style.display = 'none';
 
-        // 다중 입력 필드 초기화 및 비활성화 해제
-        const multiInputs = document.querySelectorAll('.multi-answer-input');
-        multiInputs.forEach(input => {
-            input.value = '';
-            input.disabled = false;
-        });
-
-        // --- 입력 필드 표시/숨김 로직 ---
+        // --- 입력 필드 표시/숨김 및 동적 생성 로직 ---
         const isShortQuestion = currentQuestion.type === 'short';
-        const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req; 
+        // num_req가 있고, 답변이 배열인 경우 다중 정답으로 간주
+        const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req && Array.isArray(currentQuestion.a); 
 
-        // 1. 모든 입력 필드 초기 숨김
-        document.getElementById('answer-input').style.display = 'none';
-        document.getElementById('multi-answer-input-container').style.display = 'none';
-        document.getElementById('essay-input-area').style.display = 'none';
+        const singleInput = document.getElementById('answer-input');
+        const multiContainer = document.getElementById('multi-answer-input-container');
+        const essayArea = document.getElementById('essay-input-area');
 
-        // 2. 문제 유형에 따라 적절한 필드 표시
+        // 1. 모든 입력 필드 초기 숨김 및 동적 필드 제거
+        singleInput.style.display = 'none';
+        multiContainer.style.display = 'none';
+        essayArea.style.display = 'none';
+        
+        // 이전에 동적으로 생성된 입력 필드 제거
+        multiContainer.querySelectorAll('.multi-answer-input').forEach(input => input.remove());
+
+        // 2. 문제 유형에 따라 적절한 필드 표시 및 동적 생성
         if (isMultiAnswerShort) {
-            document.getElementById('multi-answer-input-container').style.display = 'flex';
-            document.getElementById('multi-answer-guide').textContent = `요구 개수: 최소 ${currentQuestion.num_req}개 이상 (순서 무관)`;
+            multiContainer.style.display = 'flex';
+            const requiredCount = currentQuestion.num_req;
+            document.getElementById('multi-answer-guide').textContent = 
+                `요구 개수: 최소 ${requiredCount}개 이상 (순서 무관)`;
+
+            // 요구 개수(requiredCount)만큼 입력 필드 동적 생성
+            for (let i = 0; i < requiredCount; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'multi-answer-input'; // 클래스 유지
+                input.placeholder = `답변 ${i + 1}`;
+                multiContainer.appendChild(input);
+            }
+            
         } else if (isShortQuestion) { // 단일 답 단답형
-            document.getElementById('answer-input').style.display = 'block';
+            singleInput.style.display = 'block';
+            singleInput.disabled = false;
         } else { // 서술형
-            document.getElementById('essay-input-area').style.display = 'block';
+            essayArea.style.display = 'block';
         }
-        // --- 입력 필드 표시/숨김 로직 끝 ---
+        // --- 입력 필드 표시/숨김 및 동적 생성 로직 끝 ---
 
 
         // 버튼 및 상태 초기화
         document.getElementById('check-button').style.display = 'inline-block';
         document.getElementById('check-button').disabled = false;
         document.getElementById('next-button').style.display = 'none';
-        document.getElementById('answer-input').disabled = false;
+        // singleInput disabled 상태는 위에서 이미 처리됨
         document.getElementById('essay-user-answer').disabled = false;
         const essayButtons = document.getElementById('essay-score-buttons');
         if (essayButtons) essayButtons.style.display = 'block';
@@ -442,7 +452,8 @@
         setTimeout(() => {
             let inputField;
             if (isMultiAnswerShort) {
-                 inputField = document.querySelector('.multi-answer-input:not([disabled])');
+                 // 동적으로 생성된 첫 번째 필드를 선택
+                 inputField = multiContainer.querySelector('.multi-answer-input'); 
             } else if (isShortQuestion) {
                  inputField = document.getElementById('answer-input');
             } else { // essay
@@ -480,7 +491,7 @@
         const state = quizState[currentMode];
         const resultText = document.getElementById('result-text');
         
-        const isMultiAnswer = currentQuestion.num_req;
+        const isMultiAnswer = currentQuestion.num_req && Array.isArray(currentQuestion.a);
 
         let isCorrect = false;
         let feedbackMessage = '';
@@ -488,7 +499,8 @@
 
         if (isMultiAnswer) {
             // --- 다중 정답 처리 로직 ---
-            const multiInputs = document.querySelectorAll('.multi-answer-input');
+            // 동적으로 생성된 입력 필드만 선택
+            const multiInputs = document.querySelectorAll('#multi-answer-input-container .multi-answer-input');
             const userAnswers = [];
             const requiredCount = currentQuestion.num_req;
 
@@ -501,7 +513,7 @@
             });
 
             // 정답 리스트 (공백 제거 및 소문자화)
-            const allCorrectAnswersNormalized = currentQuestion.a.map(a => a.replace(/\s/g, '').toLowerCase());
+            const allCorrectAnswersNormalized = currentQuestion.a.map(a => String(a).replace(/\s/g, '').toLowerCase());
             allCorrectAnswersDisplay = currentQuestion.a.join(', ');
 
             // 순서 무관 정답 개수 계산
@@ -509,6 +521,7 @@
             const matchedInputs = [];
             
             userAnswers.forEach(userA => {
+                // 입력된 답이 정답 목록에 있고, 아직 매칭되지 않은 경우
                 if (allCorrectAnswersNormalized.includes(userA) && !matchedInputs.includes(userA)) {
                     correctCount++;
                     matchedInputs.push(userA); // 중복 답안 방지
@@ -530,13 +543,21 @@
         } else {
             // --- 단일 정답 처리 로직 (기존 로직 유지) ---
             const userAnswer = document.getElementById('answer-input').value.replace(/\s/g, '').toLowerCase();
-            const correctAnswer = currentQuestion.a.replace(/\s/g, '').toLowerCase();
-            allCorrectAnswersDisplay = currentQuestion.a; 
             
-            isCorrect = (userAnswer === correctAnswer);
+            let correctAnswer;
+            if (Array.isArray(currentQuestion.a)) {
+                // s-5 같은 문제가 Array이긴 하지만 num_req가 1인 경우
+                const normalizedAnswers = currentQuestion.a.map(a => String(a).replace(/\s/g, '').toLowerCase());
+                isCorrect = normalizedAnswers.includes(userAnswer);
+                allCorrectAnswersDisplay = currentQuestion.a.join(', ');
+            } else {
+                correctAnswer = String(currentQuestion.a).replace(/\s/g, '').toLowerCase();
+                isCorrect = (userAnswer === correctAnswer);
+                allCorrectAnswersDisplay = currentQuestion.a; 
+            }
             
             if (!isCorrect) {
-                feedbackMessage = `오답입니다! 정답: ${currentQuestion.a}`;
+                feedbackMessage = `오답입니다! 정답: ${allCorrectAnswersDisplay}`;
             }
             document.getElementById('answer-input').disabled = true;
         }
@@ -731,7 +752,11 @@
             // 다중 입력 필드에서 빈 칸은 엔터로 다음 칸으로 넘어가게 허용
             if (document.activeElement.classList.contains('multi-answer-input')) {
                 const currentInput = document.activeElement;
-                const nextInput = currentInput.nextElementSibling;
+                // 다음 요소가 input이 맞는지 확인
+                let nextInput = currentInput.nextElementSibling;
+                while (nextInput && nextInput.tagName !== 'INPUT') {
+                    nextInput = nextInput.nextElementSibling;
+                }
                 
                 if (!currentInput.value.trim() && nextInput && nextInput.classList.contains('multi-answer-input')) {
                     nextInput.focus();
@@ -756,5 +781,3 @@
 
 </body>
 </html>
-
-
