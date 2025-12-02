@@ -109,6 +109,35 @@
         }
         .master-score-text { font-size: 1.0em; flex-grow: 1; }
         .master-score-text.achieved { color: #85e085; font-weight: bold; }
+        
+        /* 마스터 서술형 채점 기준 미리보기 스타일 */
+        #master-essay-guide {
+            background-color: #383838;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+            border: 1px solid #8ab4f8;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #master-essay-guide h4 {
+            color: #ffeb3b;
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #555;
+            padding-bottom: 5px;
+        }
+        #master-essay-guide ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        #master-essay-guide ul li {
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
 
         .button-group { display: flex; justify-content: center; gap: 15px; }
         .quiz-button { padding: 12px 25px; font-size: 1.1em; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s, transform 0.1s; }
@@ -143,6 +172,12 @@
         <div id="quiz-area">
             <div id="question-box">
                 <div id="question-text"></div>
+                
+                <div id="master-essay-guide" style="display: none;">
+                    <h4>🔔 마스터 서술형 채점 기준 (총점: <span id="master-total-score-display">100</span>점)</h4>
+                    <ul id="master-essay-criteria-preview">
+                        </ul>
+                </div>
                 
                 <input type="text" id="answer-input" placeholder="정답을 입력하세요" style="display: none;"/>
                 
@@ -272,8 +307,8 @@
         { type: "essay", q: "매체 기술 발전의 한계를 4가지 서술하시오.", a: "가짜 뉴스, 사회적 고립, 문화 상업화, 세대 간 정보 격차 발생.", id: "e-18" }
     ];
 
-    // --- 마스터 서술형 문제 데이터 (새로 추가됨) ---
-    // criteria의 text 필드가 이제 자동 채점을 위한 "키워드" 역할을 합니다.
+    // --- 마스터 서술형 문제 데이터 (수정됨) ---
+    // criteria의 text는 이제 "키워드"이자 "채점 기준 텍스트" 역할을 합니다.
     const masterEssayQuizData = [
         { type: "master_essay", q: "교통 기술이 무엇인지 서술하시오.", a: "멀리 떨어진 곳까지 빠르게 이동시켜주는 기술이다.", id: "me-1", 
           criteria: [ {text: "시켜주는 기술이다.", score: 10}, {text: "멀리 떨어진 곳까지 빠르게 이동", score: 90} ] },
@@ -408,6 +443,7 @@
             document.getElementById('answer-input').style.display = 'none';
             document.getElementById('multi-answer-input-container').style.display = 'none';
             document.getElementById('essay-input-area').style.display = 'none';
+            document.getElementById('master-essay-guide').style.display = 'none'; // 가이드 숨김
             document.getElementById('check-button').style.display = 'none';
             document.getElementById('next-button').style.display = 'none';
             document.getElementById('result-text').textContent = '';
@@ -486,18 +522,21 @@
 
         // --- 입력 필드 표시/숨김 및 동적 생성 로직 ---
         const isShortQuestion = currentQuestion.type === 'short';
-        const isMasterEssay = currentQuestion.type === 'master_essay';
+        const isMasterEssay = currentQuestion.type === 'master_essay' || (currentMode === 'review' && currentQuestion.type === 'master_essay');
         // num_req가 있고, 답변이 배열인 경우 다중 정답으로 간주
         const isMultiAnswerShort = isShortQuestion && currentQuestion.num_req && Array.isArray(currentQuestion.a); 
 
         const singleInput = document.getElementById('answer-input');
         const multiContainer = document.getElementById('multi-answer-input-container');
         const essayArea = document.getElementById('essay-input-area');
+        const masterGuide = document.getElementById('master-essay-guide');
+
 
         // 1. 모든 입력 필드 초기 숨김 및 동적 필드 제거
         singleInput.style.display = 'none';
         multiContainer.style.display = 'none';
         essayArea.style.display = 'none';
+        masterGuide.style.display = 'none'; // 가이드 숨김
         
         multiContainer.querySelectorAll('.multi-answer-input').forEach(input => input.remove());
 
@@ -523,6 +562,23 @@
         } else { // 서술형 (essay 또는 master_essay)
             essayArea.style.display = 'block';
             document.getElementById('essay-user-answer').disabled = false;
+        }
+        
+        // 3. 마스터 서술형의 경우 채점 기준 미리보기 표시
+        if (isMasterEssay && currentQuestion.criteria) {
+            masterGuide.style.display = 'block';
+            const previewList = document.getElementById('master-essay-criteria-preview');
+            previewList.innerHTML = '';
+            
+            let totalScore = 0;
+            currentQuestion.criteria.forEach((criterion, index) => {
+                totalScore += criterion.score;
+                const li = document.createElement('li');
+                // 실제 채점에 사용되는 키워드(criterion.text)를 보여줍니다.
+                li.textContent = `(${criterion.score}점) - ${criterion.text}`;
+                previewList.appendChild(li);
+            });
+            document.getElementById('master-total-score-display').textContent = totalScore;
         }
         // --- 입력 필드 표시/숨김 및 동적 생성 로직 끝 ---
 
@@ -674,6 +730,7 @@
         const answerBox = document.getElementById('essay-answer-box');
         answerBox.style.display = 'block';
         document.getElementById('master-essay-answer-box').style.display = 'none'; // 마스터 서술형 숨김
+        document.getElementById('master-essay-guide').style.display = 'none'; // 가이드 숨김
 
         document.getElementById('essay-correct-answer').textContent = currentQuestion.a;
 
@@ -692,6 +749,7 @@
         const masterAnswerBox = document.getElementById('master-essay-answer-box');
         masterAnswerBox.style.display = 'block';
         document.getElementById('essay-answer-box').style.display = 'none';
+        document.getElementById('master-essay-guide').style.display = 'none'; // 가이드 숨김
 
         document.getElementById('master-essay-correct-answer').textContent = currentQuestion.a;
         
@@ -808,6 +866,9 @@
         // 기존 서술형의 자가 채점 버튼 숨김
         const essayButtons = document.getElementById('essay-score-buttons');
         if (essayButtons) essayButtons.style.display = 'none';
+        // 마스터 서술형 가이드도 숨김 (채점 결과가 대신 표시되므로)
+        document.getElementById('master-essay-guide').style.display = 'none';
+
 
         if (focusNext) {
             document.getElementById('next-button').focus();
