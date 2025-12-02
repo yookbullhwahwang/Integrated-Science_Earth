@@ -307,18 +307,20 @@
         { type: "essay", q: "매체 기술 발전의 한계를 4가지 서술하시오.", a: "가짜 뉴스, 사회적 고립, 문화 상업화, 세대 간 정보 격차 발생.", id: "e-18" }
     ];
 
-    // --- 마스터 서술형 문제 데이터 (수정됨: display_text와 keyword 분리) ---
+    // --- 마스터 서술형 문제 데이터 (수정됨: display_text를 사용자님의 최신 요구대로 변경) ---
     const masterEssayQuizData = [
         { type: "master_essay", q: "교통 기술이 무엇인지 서술하시오.", a: "멀리 떨어진 곳까지 빠르게 이동시켜주는 기술이다.", id: "me-1", 
           criteria: [ 
-            {display_text: '“~시켜주는 기술이다.”를 포함할 것.', keyword: "시켜주는 기술이다.", score: 10}, 
-            {display_text: '프린트와 내용이 완전히 일치할 것.', keyword: "멀리 떨어진 곳까지 빠르게 이동", score: 90} 
+            // 사용자님의 최신 입력에 맞춰 따옴표를 제거한 형태로 변경
+            {display_text: '~시켜주는 기술이다를 포함할 것', keyword: "시켜주는 기술이다.", score: 10}, 
+            {display_text: '프린트의 내용과 완전히 일치할 것', keyword: "멀리 떨어진 곳까지 빠르게 이동", score: 90} // 사용자님의 최신 입력에 맞춰 변경
           ] 
         },
         { type: "master_essay", q: "정보 통신 기술이 무엇인지 서술하시오.", a: "휴대 전화 및 전자 기기를 이용하여 시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통이 가능하게 해주는 기술이다.", id: "me-2", 
           criteria: [ 
-            {display_text: '“~하게 해주는 기술이다.”를 포함할 것.', keyword: "가능하게 해주는 기술이다.", score: 10}, 
-            {display_text: '프린트와 내용이 완전히 일치할 것.', keyword: "시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통", score: 90} 
+            // 사용자님의 요구에 맞춰 따옴표를 제거한 형태로 변경
+            {display_text: '~하게 해주는 기술이다를 포함할 것', keyword: "가능하게 해주는 기술이다.", score: 10}, 
+            {display_text: '프린트의 내용과 완전히 일치할 것', keyword: "시간과 장소에 구애받지 않고 정보를 쉽게 처리하고 의사 소통", score: 90} // 사용자님의 최신 입력에 맞춰 변경
           ] 
         },
         { type: "master_essay", q: "신재생에너지 기술이 무엇인지 서술하시오.", a: "지속 가능한 발전과 지구 환경 문제 해결과 도움을 주는 기술이다.", id: "me-3", 
@@ -816,7 +818,7 @@
             totalScore += criterion.score;
             
             // 키워드 정규화
-            // *** 수정된 부분: 내부 채점 시에는 keyword 필드를 사용 ***
+            // *** 수정된 부분: 내부 채점 시에는 keyword 필드를 사용 (정답 키워드) ***
             const keyword = criterion.keyword.replace(/\s/g, '').toLowerCase();
             
             // 사용자의 답안에 키워드가 포함되어 있는지 확인
@@ -831,7 +833,7 @@
             criteriaDiv.id = `criteria-item-${index}`;
             
             let statusText = isAchieved ? `O (획득: ${criterion.score}점)` : `X (미획득: 0점)`;
-            // *** 수정된 부분: 채점 결과 목록에는 display_text를 사용 ***
+            // *** 수정된 부분: 채점 결과 목록에는 display_text를 사용 (사용자 요청 문구) ***
             criteriaDiv.innerHTML = `
                 <span class="master-score-text ${isAchieved ? 'achieved' : ''}">${criterion.score}점: ${criterion.display_text}</span>
                 <span style="font-weight: bold; color: ${isAchieved ? '#85e085' : '#ff8a80'};">${statusText}</span>
